@@ -151,6 +151,93 @@ export default defineComponent({
       this.totalCompaniesCount = this.crns.length;
       this.loadingCompanies = true;
       this.loadingCompanies = false;
+    constructCompany(crn: string, exists: boolean, data?: any): Company {
+      if (!exists) {
+        return {
+          crn,
+          exists: false,
+          name: '',
+          status: '',
+          address: '',
+          confirmationStatementDue: '',
+          accountsDue: '',
+        };
+      }
+
+      let address = '';
+      if (data.registered_office_address) {
+        const elements: string[] = [
+          data.registered_office_address.care_of,
+          data.registered_office_address.po_box,
+          data.registered_office_address.premises,
+          data.registered_office_address.address_line_1,
+          data.registered_office_address.address_line_2,
+          data.registered_office_address.locality,
+          data.registered_office_address.region,
+          data.registered_office_address.country,
+          data.registered_office_address.postal_code,
+        ];
+        address = elements.filter((e) => e !== undefined && e !== null).join(', ');
+      }
+
+      const statusEnumMap = new Map<string, string>([
+        ['active', 'Active'],
+        ['dissolved', 'Dissolved'],
+        ['liquidation', 'Liquidation'],
+        ['receivership', 'Receiver Action'],
+        ['converted-closed', 'Converted / Closed'],
+        ['voluntary-arrangement', 'Voluntary Arrangement'],
+        ['insolvency-proceedings', 'Insolvency Proceedings'],
+        ['administration', 'In Administration'],
+        ['open', 'Open'],
+        ['closed', 'Closed'],
+        ['registered', 'Registered'],
+        ['removed', 'Removed'],
+      ]);
+
+      const statusDetailEnumMap = new Map<string, string>([
+        ['transferred-from-uk', 'Transfer from UK'],
+        ['active-proposal-to-strike-off', 'Active proposal to strike off'],
+        ['petition-to-restore-dissolved', 'Petition to restore dissolved'],
+        ['transformed-to-se', 'Transformed to SE'],
+        ['converted-to-plc', 'Converted to PLC'],
+        ['converted-to-uk-societas', 'Converted to UK Societas'],
+        ['converted-to-ukeig', 'Converted to UKEIG'],
+      ]);
+
+      let status: string = statusEnumMap.has(data.company_status)
+        ? statusEnumMap.get(data.company_status)
+        : data.company_status;
+      if (data.company_status_detail !== undefined) {
+        const statusDetail = statusDetailEnumMap.has(data.company_status_detail)
+          ? statusDetailEnumMap.get(data.company_status_detail)
+          : data.company_status_detail;
+        status += ` — ${statusDetail}`;
+      }
+
+      const confirmationStatementDue: string = data.confirmation_statement !== undefined
+        ? this.formatDate(data.confirmation_statement.next_due)
+        : '';
+
+      const accountsDue: string = data.accounts?.next_due !== undefined
+        ? this.formatDate(data.accounts.next_due)
+        : '';
+
+      return {
+        crn,
+        exists: true,
+        name: data.company_name,
+        status,
+        address,
+        confirmationStatementDue,
+        accountsDue,
+      };
+    },
+    formatDate(str: string) {
+      const regex = /^(\d\d\d\d)-(\d\d)-(\d\d)$/;
+      const substitution = '$3/$2/$1';
+      return str.replace(regex, substitution);
+    },
     },
   },
 });

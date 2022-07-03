@@ -49,7 +49,19 @@
     "parserOptions": {
       "ecmaVersion": 2020
     },
-    "rules": {}
+    "rules": {
+      "vuejs-accessibility/label-has-for": "off",
+      "no-plusplus": "off",
+      "no-continue": "off",
+      "no-console": "off",
+      "no-await-in-loop": "off",
+      "max-len": [
+        "error",
+        {
+          "code": 150
+        }
+      ]
+    }
   },
   "browserslist": [
     "> 1%",

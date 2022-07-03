@@ -74,6 +74,34 @@
       </div>
     </div>
   </section>
+  <section class="section" v-if="finishedLoadingCompanies">
+    <div class="container is-fluid">
+      <div class="table-container">
+        <table class="table company-data">
+          <thead>
+            <tr>
+              <th>CRN</th>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Conf. Stmt. Due</th>
+              <th>Accounts Due</th>
+              <th>Address</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="company in loadedCompanies" :key="company.crn">
+              <td><a :href="`https://find-and-update.company-information.service.gov.uk/company/${company.crn}`">{{ company.crn }}</a></td>
+              <td>{{ company.name }}</td>
+              <td>{{ company.status }}</td>
+              <td>{{ company.confirmationStatementDue }}</td>
+              <td>{{ company.accountsDue }}</td>
+              <td>{{ company.address }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script lang="ts">
@@ -97,6 +125,7 @@ export default defineComponent({
       loadedCompaniesCount: 0,
       totalCompaniesCount: 0,
       loadedCompanies: [] as Company[],
+      finishedLoadingCompanies: false,
       rateLimited: false,
       ratelimitResetEpoch: 0,
       currentEpochMilliseconds: 0,
@@ -212,6 +241,7 @@ export default defineComponent({
         i++;
       }
       this.loadingCompanies = false;
+      this.finishedLoadingCompanies = true;
     },
     constructCompany(crn: string, exists: boolean, data?: any): Company {
       if (!exists) {

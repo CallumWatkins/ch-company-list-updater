@@ -68,6 +68,9 @@
       </div>
       <div v-if="loadingCompanies">
         <p>Loaded {{ loadedCompaniesCount }} of {{ totalCompaniesCount }} ...</p>
+        <p v-if="rateLimited">
+          Rate limited! Waiting for {{ Math.max(ratelimitResetEpoch - Math.round(currentEpochMilliseconds / 1000), 0) }} seconds.
+        </p>
       </div>
     </div>
   </section>
@@ -94,7 +97,13 @@ export default defineComponent({
       loadedCompaniesCount: 0,
       totalCompaniesCount: 0,
       loadedCompanies: [] as Company[],
+      rateLimited: false,
+      ratelimitResetEpoch: 0,
+      currentEpochMilliseconds: 0,
     };
+  },
+  mounted() {
+    setInterval(() => { this.currentEpochMilliseconds = Date.now(); }, 1000);
   },
   computed: {
     crnsMultiline: {
@@ -160,9 +169,32 @@ export default defineComponent({
           this.loadedCompaniesCount++;
         } else if (response.status === 429) {
           // Rate limit exceeded
+          this.rateLimited = true;
+          const ratelimitResetHeader = response.headers.get('x-ratelimit-reset');
+          if (ratelimitResetHeader === null) {
+            console.error('Missing x-ratelimit-reset header');
+            return;
+          }
+          const currentEpochSeconds = Math.round(Date.now() / 1000);
+          const ratelimitResetEpochSeconds: number = parseInt(ratelimitResetHeader, 10);
+          const ratelimitResetDifferenceSeconds: number = ratelimitResetEpochSeconds - currentEpochSeconds;
+          const rateLimitBufferSeconds = 3;
+          this.ratelimitResetEpoch = ratelimitResetEpochSeconds + rateLimitBufferSeconds;
+          const delayTimeSeconds = ratelimitResetDifferenceSeconds + rateLimitBufferSeconds;
           console.log(
             'Rate limit exceeded!',
+            'Current time:',
+            currentEpochSeconds,
+            'Reset time:',
+            ratelimitResetEpochSeconds,
+            'Waiting for',
+            ratelimitResetDifferenceSeconds,
+            'seconds.',
           );
+          if (delayTimeSeconds > 0) {
+            await this.delay(delayTimeSeconds);
+          }
+          this.rateLimited = false;
           continue;
         } else if (response.status === 404) {
           // Company not found
@@ -180,6 +212,7 @@ export default defineComponent({
         i++;
       }
       this.loadingCompanies = false;
+    },
     constructCompany(crn: string, exists: boolean, data?: any): Company {
       if (!exists) {
         return {
@@ -267,6 +300,10 @@ export default defineComponent({
       const substitution = '$3/$2/$1';
       return str.replace(regex, substitution);
     },
+    async delay(seconds: number): Promise<void> {
+      return new Promise((resolve) => {
+        setTimeout(resolve, seconds * 1000);
+      });
     },
   },
 });

@@ -357,3 +357,11 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped lang="scss">
+  .table.company-data{
+    th, td {
+      white-space: nowrap;
+    }
+  }
+</style>

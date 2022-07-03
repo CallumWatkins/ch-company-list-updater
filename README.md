@@ -1,4 +1,4 @@
-# name-list-updater
+# Companies House Company List Updater
 
 ## Project setup
 ```

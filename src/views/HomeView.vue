@@ -150,6 +150,35 @@ export default defineComponent({
 
       this.totalCompaniesCount = this.crns.length;
       this.loadingCompanies = true;
+      for (let i = 0; i < this.crns.length;) {
+        const crn = this.crns[i];
+        const response = await this.apiRequest(`https://api.company-information.service.gov.uk/company/${crn}`, this.apiKey);
+        if (response.status === 200) {
+          // Company found
+          const companyData = await response.json();
+          this.loadedCompanies.push(this.constructCompany(crn, true, companyData));
+          this.loadedCompaniesCount++;
+        } else if (response.status === 429) {
+          // Rate limit exceeded
+          console.log(
+            'Rate limit exceeded!',
+          );
+          continue;
+        } else if (response.status === 404) {
+          // Company not found
+          this.loadedCompanies.push(this.constructCompany(crn, false));
+          this.loadedCompaniesCount++;
+        } else if (response.status === 401) {
+          // Authorisation failed
+          console.error('API authorisation failed: ', response.json());
+          return;
+        } else {
+          // Unexpected status code
+          console.error('Unexpected status code: ', response.status);
+          return;
+        }
+        i++;
+      }
       this.loadingCompanies = false;
     constructCompany(crn: string, exists: boolean, data?: any): Company {
       if (!exists) {

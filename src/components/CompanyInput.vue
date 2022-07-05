@@ -76,12 +76,9 @@ export default defineComponent({
       }
 
       // Validate CRNs
-      for (let i = 0; i < this.crns.length; i++) {
-        const crn = this.crns[i];
-        if (!this.crnValid(crn)) {
-          this.crnsInvalid = true;
-          return;
-        }
+      if (!this.crns.every(this.crnValid)) {
+        this.crnsInvalid = true;
+        return;
       }
 
       this.$emit('crnsSubmitted', this.crns.slice(0));

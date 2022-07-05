@@ -70,10 +70,12 @@ export default class Company {
       }
 
       const confirmationStatementDue: string = rawData.confirmation_statement !== undefined
+        && rawData.company_status !== 'dissolved'
         ? Company.formatDate(rawData.confirmation_statement.next_due)
         : '';
 
       const accountsDue: string = rawData.accounts?.next_due !== undefined
+        && rawData.company_status !== 'dissolved'
         ? Company.formatDate(rawData.accounts.next_due)
         : '';
 

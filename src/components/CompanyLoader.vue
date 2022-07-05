@@ -2,14 +2,20 @@
   <section class="section">
     <div class="container">
       <div v-if="finishedLoading">
-        <h3 class="title is-5">Done!</h3>
-        <p>Loaded {{ totalCompaniesCount }} companies</p>
+        <h3 class="title is-3 is-spaced has-icon">
+          <font-awesome-icon icon="fa-solid fa-circle-check" />
+          Done
+        </h3>
+        <p class="subtitle is-5">Loaded {{ totalCompaniesCount }} companies.</p>
       </div>
       <div v-else>
-        <h3 class="title is-5">Loading...</h3>
-        <p>Loaded {{ loadedCompaniesCount }} of {{ totalCompaniesCount }} companies ...</p>
-        <p v-if="rateLimited">
-          Rate limited! Waiting for {{ Math.max(ratelimitResetEpoch - Math.round(currentEpochMilliseconds / 1000), 0) }} seconds.
+        <h3 class="title is-3 is-spaced has-icon">
+          <font-awesome-icon icon="fa-solid fa-circle-notch" spin />
+          Loading...
+        </h3>
+        <p class="subtitle is-5">Loaded {{ loadedCompaniesCount }} of {{ totalCompaniesCount }} companies ...</p>
+        <p v-if="!rateLimited" class="is-italic">
+          Rate limited — waiting for {{ Math.max(ratelimitResetEpoch - Math.round(currentEpochMilliseconds / 1000), 0) }} seconds.
         </p>
       </div>
     </div>
@@ -142,5 +148,7 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-
+.has-icon > *:first-child {
+  margin-inline-end: 0.4rem;
+}
 </style>

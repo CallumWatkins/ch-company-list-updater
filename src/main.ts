@@ -5,9 +5,14 @@ import router from './router';
 import VueTippy from 'vue-tippy';
 import { library as fontAwesomeLibrary } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon as fontAwesomeIconComponent } from '@fortawesome/vue-fontawesome';
-import { faKey, faCheck } from '@fortawesome/free-solid-svg-icons';
+import {
+  faKey,
+  faCheck,
+  faCircleCheck,
+  faCircleNotch,
+} from '@fortawesome/free-solid-svg-icons';
 
-fontAwesomeLibrary.add(faKey, faCheck);
+fontAwesomeLibrary.add(faKey, faCheck, faCircleCheck, faCircleNotch);
 
 createApp(App)
   .component('font-awesome-icon', fontAwesomeIconComponent)

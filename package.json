@@ -54,11 +54,23 @@
       "no-plusplus": "off",
       "no-continue": "off",
       "no-console": "off",
+      "prefer-destructuring": "off",
       "no-await-in-loop": "off",
+      "no-return-assign": [
+        "error",
+        "except-parens"
+      ],
       "max-len": [
         "error",
         {
           "code": 150
+        }
+      ],
+      "lines-between-class-members": [
+        "error",
+        "always",
+        {
+          "exceptAfterSingleLine": true
         }
       ]
     }

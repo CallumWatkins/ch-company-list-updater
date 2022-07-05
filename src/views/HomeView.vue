@@ -30,7 +30,7 @@ export default defineComponent({
     return {
       companiesHouseApi: null as (CompaniesHouseApi | null),
       crns: [] as string[],
-      loading: Boolean,
+      loading: false,
       loadedCompanies: [] as Company[],
     };
   },

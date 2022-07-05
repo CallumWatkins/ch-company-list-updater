@@ -2,7 +2,7 @@
   <section class="section">
     <div class="container is-fluid">
       <div class="table-container">
-        <table class="table company-data">
+        <table class="table">
           <thead>
             <tr>
               <th><a href="#" v-tippy="copiedColumnName === 'crn' ? 'Copied!' : 'Click to Copy'"
@@ -72,6 +72,8 @@ export default defineComponent({
 
 <style scoped lang="scss">
 table {
+  margin-inline: auto;
+
   th, td {
     white-space: nowrap;
   }

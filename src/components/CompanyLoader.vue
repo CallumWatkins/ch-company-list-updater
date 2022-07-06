@@ -51,7 +51,10 @@ export default defineComponent({
     },
   },
   mounted() {
-    setInterval(() => { this.currentEpochMilliseconds = Date.now(); }, 1000);
+    this.timerItervalId = setInterval(() => { this.currentEpochMilliseconds = Date.now(); }, 1000);
+  },
+  unmounted() {
+    clearInterval(this.timerItervalId);
   },
   data() {
     return {
@@ -61,6 +64,7 @@ export default defineComponent({
       loadedCompanies: [] as Company[],
       rateLimited: false,
       ratelimitResetEpoch: 0,
+      timerItervalId: 0,
       currentEpochMilliseconds: 0,
     };
   },

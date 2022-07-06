@@ -1,4 +1,10 @@
 <template>
+  <section class="section">
+    <div class="container">
+      <h1 class="title is-3 is-spaced">Company List Updater</h1>
+      <h2 class="subtitle is-5">Get the latest company information from Companies House.</h2>
+    </div>
+  </section>
   <ApiKeyInput @save-key="x => companiesHouseApi = x.api" />
   <CompanyInput v-if="companiesHouseApi !== null"
     @crns-submitted="x => crns = x.crns" :isLoading="loading" />

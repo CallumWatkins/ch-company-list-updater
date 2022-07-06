@@ -25,7 +25,8 @@
   <footer class="footer">
     <div class="content has-text-centered">
       <p>
-        <strong>Companies House Company List Updater</strong> by <a href="https://callumwatkins.com" target="_blank">Callum Watkins</a>.
+        <strong>Companies House Company List Updater</strong> by <a href="https://www.callumwatkins.com" target="_blank">
+          <span class="no-wrap">Callum Watkins</span></a>.
       </p>
     </div>
   </footer>
@@ -46,4 +47,8 @@ export default defineComponent({
 
 <style lang="scss">
 @import "@/assets/styles/styles.scss";
+
+.no-wrap {
+  white-space: nowrap;
+}
 </style>

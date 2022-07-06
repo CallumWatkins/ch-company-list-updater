@@ -34,6 +34,14 @@ export default defineComponent({
       loadedCompanies: [] as Company[],
     };
   },
+  beforeRouteLeave() {
+    if (this.loadedCompanies.length > 0) {
+      const answer = window.confirm('Are you sure? All loaded data will be lost.');
+      if (!answer) return false;
+      window.removeEventListener('beforeunload', this.beforeUnloadHandler);
+    }
+    return undefined;
+  },
   methods: {
     beforeUnloadHandler(e: BeforeUnloadEvent) {
       e.preventDefault();

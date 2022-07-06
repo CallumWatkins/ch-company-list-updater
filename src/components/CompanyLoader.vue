@@ -65,13 +65,6 @@ export default defineComponent({
     };
   },
   watch: {
-    loadedCompaniesCount(newVal: number) {
-      if (newVal > 0) {
-        window.addEventListener('beforeunload', this.beforeUnloadHandler);
-      } else {
-        window.removeEventListener('beforeunload', this.beforeUnloadHandler);
-      }
-    },
     crns: {
       immediate: true,
       async handler(newVal: string[]) {
@@ -82,10 +75,6 @@ export default defineComponent({
     },
   },
   methods: {
-    beforeUnloadHandler(e: BeforeUnloadEvent) {
-      e.preventDefault();
-      return (e.returnValue = 'Are you sure? All loaded data will be lost.');
-    },
     async loadCompanies() {
       this.finishedLoading = false;
       this.loadedCompanies = [];

@@ -3,7 +3,7 @@
   <CompanyInput v-if="companiesHouseApi !== null"
     @crns-submitted="x => crns = x.crns" :isLoading="loading" />
   <CompanyLoader v-if="companiesHouseApi !== null && crns.length > 0"
-    :api="companiesHouseApi" :crns="crns" @companies-loaded="x => loadedCompanies = x.companies" />
+    :api="companiesHouseApi" :crns="crns" @companies-loaded="companiesLoaded" />
   <CompanyOutput v-if="loadedCompanies.length > 0"
     :companies="loadedCompanies" />
 </template>
@@ -33,6 +33,20 @@ export default defineComponent({
       loading: false,
       loadedCompanies: [] as Company[],
     };
+  },
+  methods: {
+    beforeUnloadHandler(e: BeforeUnloadEvent) {
+      e.preventDefault();
+      return (e.returnValue = 'Are you sure? All loaded data will be lost.');
+    },
+    companiesLoaded(companies: { companies: Company[] }) {
+      this.loadedCompanies = companies.companies;
+      if (this.loadedCompanies.length > 0) {
+        window.addEventListener('beforeunload', this.beforeUnloadHandler);
+      } else {
+        window.removeEventListener('beforeunload', this.beforeUnloadHandler);
+      }
+    },
   },
 });
 </script>

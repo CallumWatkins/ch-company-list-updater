@@ -33,6 +33,7 @@
 // @import "~bulma/sass/components/menu";
 // @import "~bulma/sass/components/message";
 // @import "~bulma/sass/components/modal";
+$navbar-breakpoint: $tablet;
 @import "~bulma/sass/components/navbar";
 // @import "~bulma/sass/components/pagination";
 // @import "~bulma/sass/components/panel";
@@ -62,5 +63,22 @@
   
   &:not(:first-of-type) {
     padding-top: 1.5rem;
+  }
+}
+
+.navbar-menu .router-link-active {
+  font-weight: bold;
+}
+
+@include tablet {
+  .navbar.is-light .navbar-start > a.navbar-item,
+  .navbar.is-light .navbar-brand > a.navbar-item {
+    &:focus {
+      background-color: initial;
+    }
+
+    &:hover {
+      background-color: hsl(0deg 0% 91%);
+    }
   }
 }

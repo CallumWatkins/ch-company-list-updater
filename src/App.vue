@@ -15,8 +15,8 @@
       </div>
       <div class="navbar-menu" :class="{ 'is-active': navbarHamburgerOpen }">
         <div class="navbar-start">
-          <router-link to="/" class="navbar-item">Home</router-link>
-          <router-link to="/about" class="navbar-item">About</router-link>
+          <router-link to="/" @click="navbarHamburgerOpen = false" class="navbar-item">Home</router-link>
+          <router-link to="/about" @click="navbarHamburgerOpen = false" class="navbar-item">About</router-link>
         </div>
       </div>
     </div>

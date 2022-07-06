@@ -8,7 +8,7 @@ module.exports = defineConfig({
   css: {
     loaderOptions: {
       sass: {
-        additionalData: '@import "@/assets/styles/styles.scss";',
+        additionalData: '@import "~bulma/sass/utilities/_all";',
       },
     },
   },

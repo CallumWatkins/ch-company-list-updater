@@ -24,7 +24,7 @@
               <div class="field" v-if="!apiKeySaved">
                 <div class="control">
                   <button type="submit" class="button is-primary"
-                    :class="{'is-loading': apiKeySaving}">
+                    :class="{'is-loading': apiKeySaving}" :disabled="apiKey.length === 0">
                     Save
                   </button>
                 </div>

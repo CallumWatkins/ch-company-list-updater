@@ -2,7 +2,7 @@
   <section class="section">
     <div class="container is-fluid">
       <div class="table-container">
-        <table class="table">
+        <table class="table is-striped">
           <thead>
             <tr>
               <th><a href="#" v-tippy="copiedColumnName === 'crn' ? 'Copied!' : 'Click to Copy'"

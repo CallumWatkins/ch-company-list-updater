@@ -8,7 +8,7 @@
               <font-awesome-icon icon="fa-solid fa-circle-check" />
               Done
             </h3>
-            <p class="subtitle is-5">Loaded {{ totalCompaniesCount }} companies.</p>
+            <p class="subtitle is-5">Loaded {{ totalCompaniesCount }} {{ totalCompaniesCount === 1 ? 'company' : 'companies' }}.</p>
           </div>
           <div v-else>
             <h3 class="title is-3 is-spaced has-icon">

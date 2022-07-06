@@ -27,8 +27,7 @@
           </thead>
           <tbody>
             <tr v-for="company in companies" :key="company.crn">
-              <td><a :href="`https://find-and-update.company-information.service.gov.uk/company/${company.crn}`"
-                target="_blank">{{ company.crn }}</a></td>
+              <td><a :href="company.humanUrl" target="_blank">{{ company.crn }}</a></td>
               <td>{{ company.name }}</td>
               <td>{{ company.status }}</td>
               <td>{{ company.confirmationStatementDue }}</td>

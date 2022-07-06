@@ -6,10 +6,12 @@ export default class Company {
   address: string;
   confirmationStatementDue: string;
   accountsDue: string;
+  humanUrl: string;
 
   constructor(crn: string, exists: boolean, rawData?: any) {
     this.crn = crn;
     this.exists = exists;
+    this.humanUrl = `https://find-and-update.company-information.service.gov.uk/company/${crn}`;
 
     if (!exists) {
       this.name = '';

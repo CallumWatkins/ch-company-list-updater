@@ -51,6 +51,7 @@
     },
     "rules": {
       "vuejs-accessibility/label-has-for": "off",
+      "linebreak-style": "off",
       "no-plusplus": "off",
       "no-continue": "off",
       "no-console": "off",

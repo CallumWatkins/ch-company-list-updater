@@ -43,7 +43,12 @@ import CompaniesHouseApi from '@/models/CompaniesHouseApi';
 
 export default defineComponent({
   name: 'ApiKeyInput',
-  emits: ['saveKey'],
+  emits: {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    saveKey(payload: { api: CompaniesHouseApi }) {
+      return true;
+    },
+  },
   data() {
     return {
       apiKey: '',
@@ -60,7 +65,7 @@ export default defineComponent({
       this.apiKeySaved = valid;
       this.apiKeyInvalid = !valid;
       this.apiKeySaving = false;
-      if (valid) this.$emit('saveKey', api);
+      if (valid) this.$emit('saveKey', { api });
     },
     async testApi(api: CompaniesHouseApi): Promise<boolean> {
       const response: Response = await api.request('/search?q=a&items_per_page=1');

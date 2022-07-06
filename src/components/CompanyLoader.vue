@@ -44,7 +44,12 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ['companiesLoaded'],
+  emits: {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    companiesLoaded(payload: { companies: Company[] }) {
+      return true;
+    },
+  },
   mounted() {
     setInterval(() => { this.currentEpochMilliseconds = Date.now(); }, 1000);
   },
@@ -84,7 +89,7 @@ export default defineComponent({
     async loadCompanies() {
       this.finishedLoading = false;
       this.loadedCompanies = [];
-      this.$emit('companiesLoaded', []);
+      this.$emit('companiesLoaded', { companies: [] });
       this.loadedCompaniesCount = 0;
       this.totalCompaniesCount = this.crns.length;
 
@@ -141,7 +146,7 @@ export default defineComponent({
         i++;
       }
       this.finishedLoading = true;
-      this.$emit('companiesLoaded', this.loadedCompanies);
+      this.$emit('companiesLoaded', { companies: this.loadedCompanies });
     },
     async delay(seconds: number): Promise<void> {
       return new Promise((resolve) => {

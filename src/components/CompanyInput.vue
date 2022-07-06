@@ -51,7 +51,12 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ['crnsSubmitted'],
+  emits: {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    crnsSubmitted(payload: { crns: string[] }) {
+      return true;
+    },
+  },
   computed: {
     crnsMultiline: {
       get(): string {
@@ -81,7 +86,7 @@ export default defineComponent({
         return;
       }
 
-      this.$emit('crnsSubmitted', this.crns.slice(0));
+      this.$emit('crnsSubmitted', { crns: this.crns.slice(0) });
     },
   },
 });

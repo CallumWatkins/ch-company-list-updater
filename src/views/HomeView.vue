@@ -1,9 +1,9 @@
 <template>
-  <ApiKeyInput @save-key="api => companiesHouseApi = api" />
+  <ApiKeyInput @save-key="x => companiesHouseApi = x.api" />
   <CompanyInput v-if="companiesHouseApi !== null"
-    @crns-submitted="(x) => crns = x" :isLoading="loading" />
+    @crns-submitted="x => crns = x.crns" :isLoading="loading" />
   <CompanyLoader v-if="companiesHouseApi !== null && crns.length > 0"
-    :api="companiesHouseApi" :crns="crns" @companies-loaded="(x) => loadedCompanies = x" />
+    :api="companiesHouseApi" :crns="crns" @companies-loaded="x => loadedCompanies = x.companies" />
   <CompanyOutput v-if="loadedCompanies.length > 0"
     :companies="loadedCompanies" />
 </template>

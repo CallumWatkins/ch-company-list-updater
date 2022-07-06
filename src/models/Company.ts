@@ -2,10 +2,12 @@ export default class Company {
   crn: string;
   exists: boolean;
   name: string;
+  creationDate: string;
+  cessationDate: string | null;
   status: string;
-  address: string;
-  confirmationStatementDue: string;
-  accountsDue: string;
+  address: string | null;
+  confirmationStatementDue: string | null;
+  accountsDue: string | null;
   humanUrl: string;
 
   constructor(crn: string, exists: boolean, rawData?: any) {
@@ -16,12 +18,22 @@ export default class Company {
     if (!exists) {
       this.name = '';
       this.status = '';
-      this.address = '';
-      this.confirmationStatementDue = '';
-      this.accountsDue = '';
+      this.creationDate = '';
+      this.cessationDate = null;
+      this.address = null;
+      this.confirmationStatementDue = null;
+      this.accountsDue = null;
     } else {
-      let address = '';
-      if (rawData.registered_office_address) {
+      this.name = rawData.company_name;
+
+      this.creationDate = Company.formatDate(rawData.date_of_creation);
+
+      this.cessationDate = rawData.date_of_cessation !== undefined
+        ? Company.formatDate(rawData.date_of_cessation)
+        : null;
+
+      this.address = null;
+      if (rawData.registered_office_address !== undefined) {
         const elements: string[] = [
           rawData.registered_office_address.care_of,
           rawData.registered_office_address.po_box,
@@ -33,7 +45,7 @@ export default class Company {
           rawData.registered_office_address.country,
           rawData.registered_office_address.postal_code,
         ];
-        address = elements.filter((e) => e !== undefined && e !== null).join(', ');
+        this.address = elements.filter((e) => e !== undefined && e !== null).join(', ');
       }
 
       const statusEnumMap = new Map<string, string>([
@@ -61,31 +73,25 @@ export default class Company {
         ['converted-to-ukeig', 'Converted to UKEIG'],
       ]);
 
-      let status: string = statusEnumMap.has(rawData.company_status)
+      this.status = statusEnumMap.has(rawData.company_status)
         ? statusEnumMap.get(rawData.company_status)
         : rawData.company_status;
       if (rawData.company_status_detail !== undefined) {
         const statusDetail = statusDetailEnumMap.has(rawData.company_status_detail)
           ? statusDetailEnumMap.get(rawData.company_status_detail)
           : rawData.company_status_detail;
-        status += ` — ${statusDetail}`;
+        this.status += ` — ${statusDetail}`;
       }
 
-      const confirmationStatementDue: string = rawData.confirmation_statement !== undefined
+      this.confirmationStatementDue = rawData.confirmation_statement !== undefined
         && rawData.company_status !== 'dissolved'
         ? Company.formatDate(rawData.confirmation_statement.next_due)
-        : '';
+        : null;
 
-      const accountsDue: string = rawData.accounts?.next_due !== undefined
+      this.accountsDue = rawData.accounts?.next_due !== undefined
         && rawData.company_status !== 'dissolved'
         ? Company.formatDate(rawData.accounts.next_due)
-        : '';
-
-      this.name = rawData.company_name;
-      this.status = status;
-      this.address = address;
-      this.confirmationStatementDue = confirmationStatementDue;
-      this.accountsDue = accountsDue;
+        : null;
     }
   }
 

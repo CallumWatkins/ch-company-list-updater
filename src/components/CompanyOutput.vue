@@ -61,9 +61,13 @@ export default defineComponent({
   methods: {
     async copyColumn(name: keyof Company) {
       const data: string = this.companies.map((c) => c[name]).join('\n');
-      await navigator.clipboard.writeText(data);
-      console.log('Copied', name, 'column');
-      this.copiedColumnName = name;
+      try {
+        await navigator.clipboard.writeText(data);
+        console.log('Copied', name, 'column');
+        this.copiedColumnName = name;
+      } catch {
+        console.error('Clipboard permission denied');
+      }
     },
   },
 });

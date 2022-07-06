@@ -1,22 +1,27 @@
 <template>
   <section class="section">
     <div class="container">
-      <div v-if="finishedLoading">
-        <h3 class="title is-3 is-spaced has-icon">
-          <font-awesome-icon icon="fa-solid fa-circle-check" />
-          Done
-        </h3>
-        <p class="subtitle is-5">Loaded {{ totalCompaniesCount }} companies.</p>
-      </div>
-      <div v-else>
-        <h3 class="title is-3 is-spaced has-icon">
-          <font-awesome-icon icon="fa-solid fa-circle-notch" spin />
-          Loading...
-        </h3>
-        <p class="subtitle is-5">Loaded {{ loadedCompaniesCount }} of {{ totalCompaniesCount }} companies ...</p>
-        <p v-if="!rateLimited" class="is-italic">
-          Rate limited — waiting for {{ Math.max(ratelimitResetEpoch - Math.round(currentEpochMilliseconds / 1000), 0) }} seconds.
-        </p>
+      <div class="columns">
+        <div class="column is-half-desktop is-two-thirds-tablet is-full-mobile">
+          <div v-if="finishedLoading">
+            <h3 class="title is-3 is-spaced has-icon">
+              <font-awesome-icon icon="fa-solid fa-circle-check" />
+              Done
+            </h3>
+            <p class="subtitle is-5">Loaded {{ totalCompaniesCount }} companies.</p>
+          </div>
+          <div v-else>
+            <h3 class="title is-3 is-spaced has-icon">
+              <font-awesome-icon icon="fa-solid fa-circle-notch" spin />
+              Loading...
+            </h3>
+            <p class="subtitle is-5">Loaded {{ loadedCompaniesCount }} of {{ totalCompaniesCount }} companies ...</p>
+            <progress class="progress" :value="loadedCompaniesCount" :max="totalCompaniesCount"></progress>
+            <p v-if="rateLimited" class="is-italic">
+              Rate limited — waiting for {{ Math.max(ratelimitResetEpoch - Math.round(currentEpochMilliseconds / 1000), 0) }} seconds.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   </section>

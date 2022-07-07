@@ -70,15 +70,17 @@ $navbar-breakpoint: $tablet;
   font-weight: bold;
 }
 
-@include tablet {
-  .navbar.is-light .navbar-start > a.navbar-item,
-  .navbar.is-light .navbar-brand > a.navbar-item {
-    &:focus {
-      background-color: initial;
-    }
-
-    &:hover {
-      background-color: hsl(0deg 0% 91%);
-    }
+.navbar.is-light .navbar-start > a.navbar-item,
+.navbar.is-light .navbar-brand > a.navbar-item {
+  &:focus {
+    background-color: initial;
   }
+
+  &:hover {
+    background-color: hsl(0deg 0% 91%);
+  }
+}
+
+.no-wrap {
+  white-space: nowrap;
 }

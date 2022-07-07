@@ -1,35 +1,38 @@
 <template>
-  <nav class="navbar is-spaced is-light">
-    <div class="container">
-      <div class="navbar-brand">
-        <router-link to="/" class="navbar-item">
-          <img src="./assets/logo.png" alt="" height="28">
-        </router-link>
-        <a role="button" class="navbar-burger" :class="{ 'is-active': navbarHamburgerOpen }"
-          @click="navbarHamburgerOpen = !navbarHamburgerOpen" @keypress.enter="navbarHamburgerOpen = !navbarHamburgerOpen"
-          aria-label="menu" :aria-expanded="navbarHamburgerOpen" tabindex="0">
-          <span aria-hidden="true"></span>
-          <span aria-hidden="true"></span>
-          <span aria-hidden="true"></span>
-        </a>
-      </div>
-      <div class="navbar-menu" :class="{ 'is-active': navbarHamburgerOpen }">
-        <div class="navbar-start">
-          <router-link to="/" @click="navbarHamburgerOpen = false" class="navbar-item">Home</router-link>
-          <router-link to="/about" @click="navbarHamburgerOpen = false" class="navbar-item">About</router-link>
+  <div id="wrapper">
+    <nav class="navbar is-spaced is-light">
+      <div class="container">
+        <div class="navbar-brand">
+          <router-link to="/" class="navbar-item">
+            <img src="./assets/logo.png" alt="" height="28">
+          </router-link>
+          <a role="button" class="navbar-burger" :class="{ 'is-active': navbarHamburgerOpen }"
+            @click="navbarHamburgerOpen = !navbarHamburgerOpen" @keypress.enter="navbarHamburgerOpen = !navbarHamburgerOpen"
+            aria-label="menu" :aria-expanded="navbarHamburgerOpen" tabindex="0">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+        <div class="navbar-menu" :class="{ 'is-active': navbarHamburgerOpen }">
+          <div class="navbar-start">
+            <router-link to="/" @click="navbarHamburgerOpen = false" class="navbar-item">Home</router-link>
+            <router-link to="/about" @click="navbarHamburgerOpen = false" class="navbar-item">About</router-link>
+          </div>
         </div>
       </div>
-    </div>
-  </nav>
-  <router-view/>
-  <footer class="footer">
-    <div class="content has-text-centered">
-      <p>
-        <strong>Companies House Company List Updater</strong> by <a href="https://www.callumwatkins.com" target="_blank">
-          <span class="no-wrap">Callum Watkins</span></a>.
-      </p>
-    </div>
-  </footer>
+    </nav>
+    <router-view/>
+    <div id="wrapper__spacer"></div>
+    <footer class="footer">
+      <div class="content has-text-centered">
+        <p>
+          <strong>Companies House Company List Updater</strong> by <a href="https://www.callumwatkins.com" target="_blank">
+            <span class="no-wrap">Callum Watkins</span></a>.
+        </p>
+      </div>
+    </footer>
+  </div>
 </template>
 
 <script lang="ts">
@@ -48,7 +51,13 @@ export default defineComponent({
 <style lang="scss">
 @import "@/assets/styles/styles.scss";
 
-.no-wrap {
-  white-space: nowrap;
+#wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+
+  &__spacer {
+    flex-grow: 1;
+  }
 }
 </style>

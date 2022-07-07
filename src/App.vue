@@ -6,15 +6,15 @@
           <router-link to="/" class="navbar-item">
             <img src="./assets/logo.png" alt="" height="28">
           </router-link>
-          <a role="button" class="navbar-burger" :class="{ 'is-active': navbarHamburgerOpen }"
-            @click="navbarHamburgerOpen = !navbarHamburgerOpen" @keypress.enter="navbarHamburgerOpen = !navbarHamburgerOpen"
-            aria-label="menu" :aria-expanded="navbarHamburgerOpen" tabindex="0">
+          <a role="button" class="navbar-burger" :class="{ 'is-active': navbarMobileOpen }"
+            @click="navbarMobileOpen = !navbarMobileOpen" @keypress.enter="navbarMobileOpen = !navbarMobileOpen"
+            aria-label="menu" :aria-expanded="navbarMobileOpen" tabindex="0">
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
           </a>
         </div>
-        <div class="navbar-menu" :class="{ 'is-active': navbarHamburgerOpen }">
+        <div class="navbar-menu" :class="{ 'is-active': navbarMobileOpen }">
           <div class="navbar-start">
             <router-link to="/" class="navbar-item">Home</router-link>
             <router-link to="/about" class="navbar-item">About</router-link>
@@ -42,12 +42,12 @@ export default defineComponent({
   name: 'App',
   data() {
     return {
-      navbarHamburgerOpen: false,
+      navbarMobileOpen: false,
     };
   },
   watch: {
     $route() {
-      this.navbarHamburgerOpen = false;
+      this.navbarMobileOpen = false;
     },
   },
 });

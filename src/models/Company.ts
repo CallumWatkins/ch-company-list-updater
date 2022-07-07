@@ -29,6 +29,7 @@ export default class Company {
       this.creationDate = Company.formatDate(rawData.date_of_creation);
 
       this.cessationDate = rawData.date_of_cessation !== undefined
+        && rawData.company_status !== 'active'
         ? Company.formatDate(rawData.date_of_cessation)
         : null;
 

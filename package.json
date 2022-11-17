@@ -5,7 +5,7 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint --no-fix"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.0.0",
@@ -29,6 +29,7 @@
     "@vue/eslint-config-airbnb": "^7.0.0",
     "@vue/eslint-config-typescript": "^11.0.0",
     "eslint": "^8.0.0",
+    "eslint-import-resolver-typescript": "^3.5.2",
     "eslint-plugin-import": "^2.0.0",
     "eslint-plugin-vue": "^9.0.0",
     "eslint-plugin-vuejs-accessibility": "^2.0.0",
@@ -49,6 +50,11 @@
     "parserOptions": {
       "ecmaVersion": 2020
     },
+    "settings": {
+      "import/resolver": {
+        "typescript": {}
+      }
+    },
     "rules": {
       "vuejs-accessibility/label-has-for": "off",
       "linebreak-style": "off",
@@ -62,7 +68,7 @@
         "error",
         "except-parens"
       ],
-      "max-len": [
+      "vue/max-len": [
         "error",
         {
           "code": 150
@@ -73,6 +79,24 @@
         "always",
         {
           "exceptAfterSingleLine": true
+        }
+      ],
+      "import/extensions": [
+        "error",
+        "ignorePackages",
+        {
+          "js": "never",
+          "jsx": "never",
+          "ts": "never",
+          "tsx": "never"
+        }
+      ],
+      "vue/html-self-closing": [
+        "error",
+        {
+          "html": {
+            "normal": "any"
+          }
         }
       ]
     }

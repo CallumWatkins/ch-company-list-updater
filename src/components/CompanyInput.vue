@@ -9,10 +9,14 @@
                 <label for="crns" id="crns-label" class="label">
                   Company Registration Numbers (CRNs)
                 </label>
-                <div class="control" :class="{'is-loading': isLoading}">
-                  <textarea id="crns" aria-labelledby="#crns-label" rows="10"
-                    class="textarea" :class="{'is-danger': crnsInvalid}"
-                    v-model="crnsMultiline"></textarea>
+                <div class="control" :class="{ 'is-loading': isLoading }">
+                  <textarea
+                    id="crns"
+                    aria-labelledby="#crns-label"
+                    rows="10"
+                    class="textarea"
+                    :class="{ 'is-danger': crnsInvalid }"
+                    v-model="crnsMultiline" />
                 </div>
                 <p class="help is-danger" v-if="crnsInvalid">
                   Each line should contain a single CRN
@@ -20,8 +24,10 @@
               </div>
               <div class="field">
                 <div class="control">
-                  <button type="submit" class="button is-primary"
-                    :class="{'is-loading': isLoading}">
+                  <button
+                    type="submit"
+                    class="button is-primary"
+                    :class="{ 'is-loading': isLoading }">
                     Load
                   </button>
                 </div>

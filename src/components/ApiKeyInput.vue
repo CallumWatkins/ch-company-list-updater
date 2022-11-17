@@ -7,9 +7,14 @@
             <fieldset :disabled="apiKeySaving || apiKeySaved">
               <div class="field is-narrow">
                 <label for="api-key" id="api-key-label" class="label">API Key</label>
-                <div class="control has-icons-left" :class="{'has-icons-right': apiKeySaved}">
-                  <input type="password" id="api-key" aria-labelledby="#api-key-label"
-                    class="input" :class="{'is-danger': apiKeyInvalid}" v-model="apiKey">
+                <div class="control has-icons-left" :class="{ 'has-icons-right': apiKeySaved }">
+                  <input
+                    type="password"
+                    id="api-key"
+                    aria-labelledby="#api-key-label"
+                    class="input"
+                    :class="{ 'is-danger': apiKeyInvalid }"
+                    v-model="apiKey">
                   <span class="icon is-small is-left">
                     <font-awesome-icon icon="fa-solid fa-key" />
                   </span>
@@ -23,8 +28,11 @@
               </div>
               <div class="field" v-if="!apiKeySaved">
                 <div class="control">
-                  <button type="submit" class="button is-primary"
-                    :class="{'is-loading': apiKeySaving}" :disabled="apiKey.length === 0">
+                  <button
+                    type="submit"
+                    class="button is-primary"
+                    :class="{ 'is-loading': apiKeySaving }"
+                    :disabled="apiKey.length === 0">
                     Save
                   </button>
                 </div>

@@ -6,11 +6,17 @@
     </div>
   </section>
   <ApiKeyInput @save-key="x => companiesHouseApi = x.api" />
-  <CompanyInput v-if="companiesHouseApi !== null"
-    @crns-submitted="x => crns = x.crns" :isLoading="loading" />
-  <CompanyLoader v-if="companiesHouseApi !== null && crns.length > 0"
-    :api="companiesHouseApi" :crns="crns" @companies-loaded="companiesLoaded" />
-  <CompanyOutput v-if="loadedCompanies.length > 0"
+  <CompanyInput
+    v-if="companiesHouseApi !== null"
+    @crns-submitted="x => crns = x.crns"
+    :isLoading="loading" />
+  <CompanyLoader
+    v-if="companiesHouseApi !== null && crns.length > 0"
+    :api="companiesHouseApi"
+    :crns="crns"
+    @companies-loaded="companiesLoaded" />
+  <CompanyOutput
+    v-if="loadedCompanies.length > 0"
     :companies="loadedCompanies" />
 </template>
 

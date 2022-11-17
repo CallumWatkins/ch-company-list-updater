@@ -6,12 +6,18 @@
           <router-link to="/" class="navbar-item">
             <img src="./assets/logo.png" alt="" height="28">
           </router-link>
-          <a role="button" class="navbar-burger" :class="{ 'is-active': navbarMobileOpen }"
-            @click="navbarMobileOpen = !navbarMobileOpen" @keypress.enter="navbarMobileOpen = !navbarMobileOpen"
-            aria-label="menu" :aria-expanded="navbarMobileOpen" tabindex="0">
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
+          <a
+            role="button"
+            class="navbar-burger"
+            :class="{ 'is-active': navbarMobileOpen }"
+            @click="navbarMobileOpen = !navbarMobileOpen"
+            @keypress.enter="navbarMobileOpen = !navbarMobileOpen"
+            aria-label="menu"
+            :aria-expanded="navbarMobileOpen"
+            tabindex="0">
+            <span aria-hidden="true" />
+            <span aria-hidden="true" />
+            <span aria-hidden="true" />
           </a>
         </div>
         <div class="navbar-menu" :class="{ 'is-active': navbarMobileOpen }">
@@ -22,12 +28,12 @@
         </div>
       </div>
     </nav>
-    <router-view/>
-    <div id="wrapper__spacer"></div>
+    <router-view />
+    <div id="wrapper__spacer" />
     <footer class="footer">
       <div class="content has-text-centered">
         <p>
-          <strong>Companies House Company List Updater</strong> by <a href="https://www.callumwatkins.com" target="_blank">
+          <strong>Companies House Company List Updater</strong> by <a href="https://www.callumwatkins.com" target="_blank" rel="noopener">
             <span class="no-wrap">Callum Watkins</span></a>.
         </p>
       </div>

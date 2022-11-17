@@ -16,6 +16,8 @@ Company List Updater (CLU) enables the mass retrieval of public company data thr
 
 A [Companies House Public Data API](https://developer-specs.company-information.service.gov.uk/companies-house-public-data-api/reference) key is required (free, though rate limited). See [Companies House API overview](https://developer.company-information.service.gov.uk).
 
+⚠ An issue with the Companies House API currently causes a failure if the rate limit of the API key is exceeded during a search (see https://github.com/CallumWatkins/ch-company-list-updater/issues/3).
+
 ## Project setup
 ```
 npm install

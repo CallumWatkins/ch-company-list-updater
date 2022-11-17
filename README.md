@@ -12,6 +12,10 @@
 
 ---
 
+Company List Updater (CLU) enables the mass retrieval of public company data through the Companies House API. For a given list of Companies House company registration numbers, CLU provides a table of useful company data, such as names, addresses, and accounts due dates. Each column of data can be indivudually copied for entry into other systems.
+
+A [Companies House Public Data API](https://developer-specs.company-information.service.gov.uk/companies-house-public-data-api/reference) key is required (free, though rate limited). See [Companies House API overview](https://developer.company-information.service.gov.uk).
+
 ## Project setup
 ```
 npm install

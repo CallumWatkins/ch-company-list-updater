@@ -91,6 +91,16 @@ export default defineComponent({
         this.crns.pop();
       }
 
+      // Pad CRNs with leading 0s up to 8 digits in length
+      for (let i = 0; i < this.crns.length; i++) {
+        const crn = this.crns[i].trim();
+        if (crn.length === 0 || (crn.length < 8 && /^[0-9]+$/.test(crn))) {
+          this.crns[i] = crn.padStart(8, '0');
+        } else {
+          this.crns[i] = crn;
+        }
+      }
+
       // Validate CRNs
       if (!this.crns.every(this.crnValid)) {
         this.crnsInvalid = true;

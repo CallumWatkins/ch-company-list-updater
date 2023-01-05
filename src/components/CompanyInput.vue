@@ -81,8 +81,13 @@ export default defineComponent({
     async submitCrns() {
       this.crnsInvalid = false;
 
+      // Remove leading empty elements
+      while (this.crns.length > 0 && this.crns[0].trim() === '') {
+        this.crns.shift();
+      }
+
       // Remove trailing empty elements
-      while (this.crns.length > 0 && this.crns[this.crns.length - 1] === '') {
+      while (this.crns.length > 0 && this.crns[this.crns.length - 1].trim() === '') {
         this.crns.pop();
       }
 

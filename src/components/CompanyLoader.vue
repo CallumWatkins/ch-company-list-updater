@@ -3,7 +3,14 @@
     <div class="container">
       <div class="columns">
         <div class="column is-half-desktop is-two-thirds-tablet is-full-mobile">
-          <div v-if="finishedLoading">
+          <div v-if="loadingState === LoadingState.Error">
+            <h3 class="title is-3 is-spaced has-icon">
+              <font-awesome-icon icon="fa-solid fa-circle-exclamation" />
+              Error
+            </h3>
+            <p class="subtitle is-5">An error occurred — this could be a rate limiting issue, please wait 5 minutes and try again.</p>
+          </div>
+          <div v-else-if="loadingState === LoadingState.Done">
             <h3 class="title is-3 is-spaced has-icon">
               <font-awesome-icon icon="fa-solid fa-circle-check" />
               Done
@@ -17,7 +24,7 @@
             </h3>
             <p class="subtitle is-5">Loaded {{ loadedCompaniesCount }} of {{ totalCompaniesCount }} companies ...</p>
             <progress class="progress" :value="loadedCompaniesCount" :max="totalCompaniesCount"></progress>
-            <p v-if="rateLimited" class="is-italic">
+            <p v-if="loadingState === LoadingState.RateLimited" class="is-italic">
               Rate limited — waiting for {{ Math.max(ratelimitResetEpoch - Math.round(currentEpochMilliseconds / 1000), 0) }} seconds.
             </p>
           </div>
@@ -31,6 +38,14 @@
 import { defineComponent, PropType } from 'vue';
 import Company from '@/models/Company';
 import CompaniesHouseApi from '@/models/CompaniesHouseApi';
+
+enum LoadingState {
+  Init,
+  Loading,
+  RateLimited,
+  Done,
+  Error,
+}
 
 export default defineComponent({
   name: 'CompanyInput',
@@ -58,11 +73,11 @@ export default defineComponent({
   },
   data() {
     return {
-      finishedLoading: false,
+      LoadingState,
+      loadingState: LoadingState.Init,
       loadedCompaniesCount: 0,
       totalCompaniesCount: 0,
       loadedCompanies: [] as Company[],
-      rateLimited: false,
       ratelimitResetEpoch: 0,
       timerItervalId: 0,
       currentEpochMilliseconds: 0,
@@ -80,7 +95,7 @@ export default defineComponent({
   },
   methods: {
     async loadCompanies() {
-      this.finishedLoading = false;
+      this.loadingState = LoadingState.Loading;
       this.loadedCompanies = [];
       this.$emit('companiesLoaded', { companies: [] });
       this.loadedCompaniesCount = 0;
@@ -88,7 +103,13 @@ export default defineComponent({
 
       for (let i = 0; i < this.crns.length;) {
         const crn = this.crns[i];
-        const response = await this.api.request(`/company/${crn}`);
+        let response: Response;
+        try {
+          response = await this.api.request(`/company/${crn}`);
+        } catch {
+          this.loadingState = LoadingState.Error;
+          return;
+        }
         if (response.status === 200) {
           // Company found
           const companyData = await response.json();
@@ -96,7 +117,7 @@ export default defineComponent({
           this.loadedCompaniesCount++;
         } else if (response.status === 429) {
           // Rate limit exceeded
-          this.rateLimited = true;
+          this.loadingState = LoadingState.RateLimited;
           const ratelimitResetHeader = response.headers.get('x-ratelimit-reset');
           if (ratelimitResetHeader === null) {
             console.error('Missing x-ratelimit-reset header');
@@ -121,7 +142,7 @@ export default defineComponent({
           if (delayTimeSeconds > 0) {
             await this.delay(delayTimeSeconds);
           }
-          this.rateLimited = false;
+          this.loadingState = LoadingState.Loading;
           continue;
         } else if (response.status === 404) {
           // Company not found
@@ -138,7 +159,7 @@ export default defineComponent({
         }
         i++;
       }
-      this.finishedLoading = true;
+      this.loadingState = LoadingState.Done;
       this.$emit('companiesLoaded', { companies: this.loadedCompanies });
     },
     async delay(seconds: number): Promise<void> {

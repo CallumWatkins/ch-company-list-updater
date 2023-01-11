@@ -10,9 +10,16 @@ import {
   faCheck,
   faCircleCheck,
   faCircleNotch,
+  faCircleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
 
-fontAwesomeLibrary.add(faKey, faCheck, faCircleCheck, faCircleNotch);
+fontAwesomeLibrary.add(
+  faKey,
+  faCheck,
+  faCircleCheck,
+  faCircleNotch,
+  faCircleExclamation,
+);
 
 createApp(App)
   .component('font-awesome-icon', fontAwesomeIconComponent)

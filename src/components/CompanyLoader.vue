@@ -103,59 +103,64 @@ export default defineComponent({
 
       for (let i = 0; i < this.crns.length;) {
         const crn = this.crns[i];
-        let response: Response;
-        try {
-          response = await this.api.request(`/company/${crn}`);
-        } catch {
-          this.loadingState = LoadingState.Error;
-          return;
-        }
-        if (response.status === 200) {
-          // Company found
-          const companyData = await response.json();
-          this.loadedCompanies.push(new Company(crn, true, companyData));
-          this.loadedCompaniesCount++;
-        } else if (response.status === 429) {
-          // Rate limit exceeded
-          this.loadingState = LoadingState.RateLimited;
-          const ratelimitResetHeader = response.headers.get('x-ratelimit-reset');
-          if (ratelimitResetHeader === null) {
-            console.error('Missing x-ratelimit-reset header');
-            return;
-          }
-          const currentEpochSeconds = Math.round(Date.now() / 1000);
-          const ratelimitResetEpochSeconds: number = parseInt(ratelimitResetHeader, 10);
-          const ratelimitResetDifferenceSeconds: number = ratelimitResetEpochSeconds - currentEpochSeconds;
-          const rateLimitBufferSeconds = 3;
-          this.ratelimitResetEpoch = ratelimitResetEpochSeconds + rateLimitBufferSeconds;
-          const delayTimeSeconds = ratelimitResetDifferenceSeconds + rateLimitBufferSeconds;
-          console.log(
-            'Rate limit exceeded!',
-            'Current time:',
-            currentEpochSeconds,
-            'Reset time:',
-            ratelimitResetEpochSeconds,
-            'Waiting for',
-            ratelimitResetDifferenceSeconds,
-            'seconds.',
-          );
-          if (delayTimeSeconds > 0) {
-            await this.delay(delayTimeSeconds);
-          }
-          this.loadingState = LoadingState.Loading;
-          continue;
-        } else if (response.status === 404) {
-          // Company not found
+        if (crn === '00000000') {
           this.loadedCompanies.push(new Company(crn, false));
           this.loadedCompaniesCount++;
-        } else if (response.status === 401) {
-          // Authorisation failed
-          console.error('API authorisation failed: ', response.json());
-          return;
         } else {
-          // Unexpected status code
-          console.error('Unexpected status code: ', response.status);
-          return;
+          let response: Response;
+          try {
+            response = await this.api.request(`/company/${crn}`);
+          } catch {
+            this.loadingState = LoadingState.Error;
+            return;
+          }
+          if (response.status === 200) {
+            // Company found
+            const companyData = await response.json();
+            this.loadedCompanies.push(new Company(crn, true, companyData));
+            this.loadedCompaniesCount++;
+          } else if (response.status === 429) {
+            // Rate limit exceeded
+            this.loadingState = LoadingState.RateLimited;
+            const ratelimitResetHeader = response.headers.get('x-ratelimit-reset');
+            if (ratelimitResetHeader === null) {
+              console.error('Missing x-ratelimit-reset header');
+              return;
+            }
+            const currentEpochSeconds = Math.round(Date.now() / 1000);
+            const ratelimitResetEpochSeconds: number = parseInt(ratelimitResetHeader, 10);
+            const ratelimitResetDifferenceSeconds: number = ratelimitResetEpochSeconds - currentEpochSeconds;
+            const rateLimitBufferSeconds = 3;
+            this.ratelimitResetEpoch = ratelimitResetEpochSeconds + rateLimitBufferSeconds;
+            const delayTimeSeconds = ratelimitResetDifferenceSeconds + rateLimitBufferSeconds;
+            console.log(
+              'Rate limit exceeded!',
+              'Current time:',
+              currentEpochSeconds,
+              'Reset time:',
+              ratelimitResetEpochSeconds,
+              'Waiting for',
+              ratelimitResetDifferenceSeconds,
+              'seconds.',
+            );
+            if (delayTimeSeconds > 0) {
+              await this.delay(delayTimeSeconds);
+            }
+            this.loadingState = LoadingState.Loading;
+            continue;
+          } else if (response.status === 404) {
+            // Company not found
+            this.loadedCompanies.push(new Company(crn, false));
+            this.loadedCompaniesCount++;
+          } else if (response.status === 401) {
+            // Authorisation failed
+            console.error('API authorisation failed: ', response.json());
+            return;
+          } else {
+            // Unexpected status code
+            console.error('Unexpected status code: ', response.status);
+            return;
+          }
         }
         i++;
       }

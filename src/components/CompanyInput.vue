@@ -81,9 +81,24 @@ export default defineComponent({
     async submitCrns() {
       this.crnsInvalid = false;
 
+      // Remove leading empty elements
+      while (this.crns.length > 0 && this.crns[0].trim() === '') {
+        this.crns.shift();
+      }
+
       // Remove trailing empty elements
-      while (this.crns.length > 0 && this.crns[this.crns.length - 1] === '') {
+      while (this.crns.length > 0 && this.crns[this.crns.length - 1].trim() === '') {
         this.crns.pop();
+      }
+
+      // Pad CRNs with leading 0s up to 8 digits in length
+      for (let i = 0; i < this.crns.length; i++) {
+        const crn = this.crns[i].trim();
+        if (crn.length === 0 || (crn.length < 8 && /^[0-9]+$/.test(crn))) {
+          this.crns[i] = crn.padStart(8, '0');
+        } else {
+          this.crns[i] = crn;
+        }
       }
 
       // Validate CRNs

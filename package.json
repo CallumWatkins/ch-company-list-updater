@@ -1,6 +1,12 @@
 {
   "name": "ch-company-list-updater",
   "version": "1.0.4",
+  "license": "AGPL-3.0-or-later",
+  "author": {
+    "name": "Callum Watkins",
+    "url": "https://www.callumwatkins.com"
+  },
+  "homepage": "https://github.com/CallumWatkins/ch-company-list-updater",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",

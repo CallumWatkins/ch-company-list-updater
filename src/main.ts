@@ -10,9 +10,26 @@ import {
   faCheck,
   faCircleCheck,
   faCircleNotch,
+  faCircleExclamation,
+  faFileCsv,
+  faFileExcel,
+  faAngleDown,
+  faCopy,
+  faFloppyDisk,
 } from '@fortawesome/free-solid-svg-icons';
 
-fontAwesomeLibrary.add(faKey, faCheck, faCircleCheck, faCircleNotch);
+fontAwesomeLibrary.add(
+  faKey,
+  faCheck,
+  faCircleCheck,
+  faCircleNotch,
+  faCircleExclamation,
+  faFileCsv,
+  faFileExcel,
+  faAngleDown,
+  faCopy,
+  faFloppyDisk,
+);
 
 createApp(App)
   .component('font-awesome-icon', fontAwesomeIconComponent)

@@ -2,8 +2,15 @@
   <section class="section">
     <div class="container">
       <div class="columns">
-        <div class="column is-half-desktop is-two-thirds-tablet is-full-mobile">
-          <div v-if="finishedLoading">
+        <div class="column">
+          <div v-if="loadingState === LoadingState.Error">
+            <h3 class="title is-3 is-spaced has-icon">
+              <font-awesome-icon icon="fa-solid fa-circle-exclamation" />
+              Error
+            </h3>
+            <p class="subtitle is-5">An error occurred — this could be a rate limiting issue, please wait 5 minutes and try again.</p>
+          </div>
+          <div v-else-if="loadingState === LoadingState.Done">
             <h3 class="title is-3 is-spaced has-icon">
               <font-awesome-icon icon="fa-solid fa-circle-check" />
               Done
@@ -17,9 +24,103 @@
             </h3>
             <p class="subtitle is-5">Loaded {{ loadedCompaniesCount }} of {{ totalCompaniesCount }} companies ...</p>
             <progress class="progress" :value="loadedCompaniesCount" :max="totalCompaniesCount"></progress>
-            <p v-if="rateLimited" class="is-italic">
+            <p v-if="loadingState === LoadingState.RateLimited" class="is-italic">
               Rate limited — waiting for {{ Math.max(ratelimitResetEpoch - Math.round(currentEpochMilliseconds / 1000), 0) }} seconds.
             </p>
+          </div>
+        </div>
+        <div v-if="loadingState === LoadingState.Done" class="column is-narrow">
+          <div class="field is-grouped">
+            <div class="control">
+              <div class="dropdown" :class="{ 'is-active': exportDataControls.csv.dropdownOpen }">
+                <div class="dropdown-trigger">
+                  <button
+                    class="button"
+                    aria-haspopup="true"
+                    aria-controls="dropdown-menu"
+                    type="button"
+                    @click="exportDataToggleDropdown(exportDataControls.csv)"
+                  >
+                    <span class="icon">
+                      <font-awesome-icon v-if="exportDataControls.csv.success" icon="fa-solid fa-check" />
+                      <font-awesome-icon v-else icon="fa-solid fa-file-csv" />
+                    </span>
+                    <span>CSV</span>
+                    <span class="icon is-small">
+                      <font-awesome-icon icon="fa-solid fa-angle-down" />
+                    </span>
+                  </button>
+                </div>
+                <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                  <div class="dropdown-content">
+                    <a href="#" class="dropdown-item" @click.prevent="copyCsv">
+                      <span class="icon">
+                        <font-awesome-icon icon="fa-solid fa-copy" />
+                      </span>
+                      Copy
+                    </a>
+                    <a href="#" class="dropdown-item" @click.prevent="saveCsv">
+                      <span class="icon">
+                        <font-awesome-icon icon="fa-solid fa-floppy-disk" />
+                      </span>
+                      Save
+                    </a>
+                    <hr class="dropdown-divider">
+                    <div class="dropdown-item">
+                      <label class="checkbox">
+                        <input type="checkbox" v-model="exportDataControls.csv.header">
+                        Header
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="control">
+              <div class="dropdown" :class="{ 'is-active': exportDataControls.tsv.dropdownOpen }">
+                <div class="dropdown-trigger">
+                  <button
+                    class="button"
+                    aria-haspopup="true"
+                    aria-controls="dropdown-menu"
+                    type="button"
+                    @click="exportDataToggleDropdown(exportDataControls.tsv)"
+                  >
+                    <span class="icon">
+                      <font-awesome-icon v-if="exportDataControls.tsv.success" icon="fa-solid fa-check" />
+                      <font-awesome-icon v-else icon="fa-solid fa-file-excel" />
+                    </span>
+                    <span>TSV</span>
+                    <span class="icon is-small">
+                      <font-awesome-icon icon="fa-solid fa-angle-down" />
+                    </span>
+                  </button>
+                </div>
+                <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                  <div class="dropdown-content">
+                    <a href="#" class="dropdown-item" @click.prevent="copyTsv">
+                      <span class="icon">
+                        <font-awesome-icon icon="fa-solid fa-copy" />
+                      </span>
+                      Copy
+                    </a>
+                    <a href="#" class="dropdown-item" @click.prevent="saveTsv">
+                      <span class="icon">
+                        <font-awesome-icon icon="fa-solid fa-floppy-disk" />
+                      </span>
+                      Save
+                    </a>
+                    <hr class="dropdown-divider">
+                    <div class="dropdown-item">
+                      <label class="checkbox">
+                        <input type="checkbox" v-model="exportDataControls.tsv.header">
+                        Header
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -29,8 +130,24 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
+import debounce from 'lodash.debounce';
 import Company from '@/models/Company';
 import CompaniesHouseApi from '@/models/CompaniesHouseApi';
+
+enum LoadingState {
+  Init,
+  Loading,
+  RateLimited,
+  Done,
+  Error,
+}
+
+interface ExportControl {
+  dropdownOpen: boolean,
+  header: boolean,
+  success: boolean,
+  successDebounce: Function | null
+}
 
 export default defineComponent({
   name: 'CompanyInput',
@@ -51,21 +168,35 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.timerItervalId = setInterval(() => { this.currentEpochMilliseconds = Date.now(); }, 1000);
+    this.timerItervalId = window.setInterval(() => { this.currentEpochMilliseconds = Date.now(); }, 1000);
   },
   unmounted() {
-    clearInterval(this.timerItervalId);
+    window.clearInterval(this.timerItervalId);
   },
   data() {
     return {
-      finishedLoading: false,
+      LoadingState,
+      loadingState: LoadingState.Init,
       loadedCompaniesCount: 0,
       totalCompaniesCount: 0,
       loadedCompanies: [] as Company[],
-      rateLimited: false,
       ratelimitResetEpoch: 0,
       timerItervalId: 0,
       currentEpochMilliseconds: 0,
+      exportDataControls: {
+        csv: <ExportControl> {
+          dropdownOpen: false,
+          header: true,
+          success: false,
+          successDebounce: null,
+        },
+        tsv: <ExportControl> {
+          dropdownOpen: false,
+          header: true,
+          success: false,
+          successDebounce: null,
+        },
+      },
     };
   },
   watch: {
@@ -80,7 +211,7 @@ export default defineComponent({
   },
   methods: {
     async loadCompanies() {
-      this.finishedLoading = false;
+      this.loadingState = LoadingState.Loading;
       this.loadedCompanies = [];
       this.$emit('companiesLoaded', { companies: [] });
       this.loadedCompaniesCount = 0;
@@ -88,63 +219,152 @@ export default defineComponent({
 
       for (let i = 0; i < this.crns.length;) {
         const crn = this.crns[i];
-        const response = await this.api.request(`/company/${crn}`);
-        if (response.status === 200) {
-          // Company found
-          const companyData = await response.json();
-          this.loadedCompanies.push(new Company(crn, true, companyData));
-          this.loadedCompaniesCount++;
-        } else if (response.status === 429) {
-          // Rate limit exceeded
-          this.rateLimited = true;
-          const ratelimitResetHeader = response.headers.get('x-ratelimit-reset');
-          if (ratelimitResetHeader === null) {
-            console.error('Missing x-ratelimit-reset header');
-            return;
-          }
-          const currentEpochSeconds = Math.round(Date.now() / 1000);
-          const ratelimitResetEpochSeconds: number = parseInt(ratelimitResetHeader, 10);
-          const ratelimitResetDifferenceSeconds: number = ratelimitResetEpochSeconds - currentEpochSeconds;
-          const rateLimitBufferSeconds = 3;
-          this.ratelimitResetEpoch = ratelimitResetEpochSeconds + rateLimitBufferSeconds;
-          const delayTimeSeconds = ratelimitResetDifferenceSeconds + rateLimitBufferSeconds;
-          console.log(
-            'Rate limit exceeded!',
-            'Current time:',
-            currentEpochSeconds,
-            'Reset time:',
-            ratelimitResetEpochSeconds,
-            'Waiting for',
-            ratelimitResetDifferenceSeconds,
-            'seconds.',
-          );
-          if (delayTimeSeconds > 0) {
-            await this.delay(delayTimeSeconds);
-          }
-          this.rateLimited = false;
-          continue;
-        } else if (response.status === 404) {
-          // Company not found
+        if (crn === '00000000') {
           this.loadedCompanies.push(new Company(crn, false));
           this.loadedCompaniesCount++;
-        } else if (response.status === 401) {
-          // Authorisation failed
-          console.error('API authorisation failed: ', response.json());
-          return;
         } else {
-          // Unexpected status code
-          console.error('Unexpected status code: ', response.status);
-          return;
+          let response: Response;
+          try {
+            response = await this.api.request(`/company/${crn}`);
+          } catch {
+            this.loadingState = LoadingState.Error;
+            return;
+          }
+          if (response.status === 200) {
+            // Company found
+            const companyData = await response.json();
+            this.loadedCompanies.push(new Company(crn, true, companyData));
+            this.loadedCompaniesCount++;
+          } else if (response.status === 429) {
+            // Rate limit exceeded
+            this.loadingState = LoadingState.RateLimited;
+            const ratelimitResetHeader = response.headers.get('x-ratelimit-reset');
+            if (ratelimitResetHeader === null) {
+              console.error('Missing x-ratelimit-reset header');
+              return;
+            }
+            const currentEpochSeconds = Math.round(Date.now() / 1000);
+            const ratelimitResetEpochSeconds: number = parseInt(ratelimitResetHeader, 10);
+            const ratelimitResetDifferenceSeconds: number = ratelimitResetEpochSeconds - currentEpochSeconds;
+            const rateLimitBufferSeconds = 3;
+            this.ratelimitResetEpoch = ratelimitResetEpochSeconds + rateLimitBufferSeconds;
+            const delayTimeSeconds = ratelimitResetDifferenceSeconds + rateLimitBufferSeconds;
+            console.log(
+              'Rate limit exceeded!',
+              'Current time:',
+              currentEpochSeconds,
+              'Reset time:',
+              ratelimitResetEpochSeconds,
+              'Waiting for',
+              ratelimitResetDifferenceSeconds,
+              'seconds.',
+            );
+            if (delayTimeSeconds > 0) {
+              await this.delay(delayTimeSeconds);
+            }
+            this.loadingState = LoadingState.Loading;
+            continue;
+          } else if (response.status === 404) {
+            // Company not found
+            this.loadedCompanies.push(new Company(crn, false));
+            this.loadedCompaniesCount++;
+          } else if (response.status === 401) {
+            // Authorisation failed
+            console.error('API authorisation failed: ', response.json());
+            return;
+          } else {
+            // Unexpected status code
+            console.error('Unexpected status code: ', response.status);
+            return;
+          }
         }
         i++;
       }
-      this.finishedLoading = true;
+      this.loadingState = LoadingState.Done;
       this.$emit('companiesLoaded', { companies: this.loadedCompanies });
     },
     async delay(seconds: number): Promise<void> {
       return new Promise((resolve) => {
         setTimeout(resolve, seconds * 1000);
       });
+    },
+    exportDataToggleDropdown(control: ExportControl) {
+      const c = control;
+      c.dropdownOpen = !c.dropdownOpen;
+
+      // Close all other dropdowns
+      Object
+        .values(this.exportDataControls)
+        .forEach((otherControl) => {
+          if (otherControl !== control) {
+            // eslint-disable-next-line no-param-reassign
+            otherControl.dropdownOpen = false;
+          }
+        });
+    },
+    exportDataSuccess(control: ExportControl) {
+      const c = control;
+      c.success = true;
+      c.dropdownOpen = false;
+      if (c.successDebounce === null) {
+        c.successDebounce = debounce(() => {
+          c.success = false;
+        }, 3000);
+      }
+      c.successDebounce();
+    },
+    makeCsv() {
+      const dataRows = this.loadedCompanies.map((c) => c.getCsvRow());
+      return this.exportDataControls.csv.header
+        ? [Company.getCsvHeader(), ...dataRows].join('\n')
+        : dataRows.join('\n');
+    },
+    async copyCsv() {
+      const csv = this.makeCsv();
+      try {
+        await navigator.clipboard.writeText(csv);
+        this.exportDataSuccess(this.exportDataControls.csv);
+      } catch {
+        console.error('Clipboard permission denied');
+      }
+    },
+    async saveCsv() {
+      const csv = this.makeCsv();
+      this.saveFile(csv, 'company-data.csv', 'text/csv');
+      this.exportDataSuccess(this.exportDataControls.csv);
+    },
+    makeTsv() {
+      const dataRows = this.loadedCompanies.map((c) => c.getTsvRow());
+      return this.exportDataControls.tsv.header
+        ? [Company.getTsvHeader(), ...dataRows].join('\n')
+        : dataRows.join('\n');
+    },
+    async copyTsv() {
+      const tsv = this.makeTsv();
+      try {
+        await navigator.clipboard.writeText(tsv);
+        this.exportDataSuccess(this.exportDataControls.tsv);
+      } catch {
+        console.error('Clipboard permission denied');
+      }
+    },
+    async saveTsv() {
+      const tsv = this.makeTsv();
+      this.saveFile(tsv, 'company-data.tsv', 'text/tab-separated-values');
+      this.exportDataSuccess(this.exportDataControls.tsv);
+    },
+    saveFile(data: string, filename: string, type: string) {
+      const file = new Blob([data], { type });
+      const a = document.createElement('a');
+      const url = URL.createObjectURL(file);
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 0);
     },
   },
 });

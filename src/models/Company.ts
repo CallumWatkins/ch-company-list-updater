@@ -101,4 +101,46 @@ export default class Company {
     const substitution = '$3/$2/$1';
     return str.replace(regex, substitution);
   }
+
+  public static getCsvHeader() {
+    return 'CRN,Name,Status,Confirmation Statement Due,Accounts Due,Address';
+  }
+
+  public getCsvRow() {
+    function makeCsvField(s: string | null) {
+      if (s === null) return '';
+      if (s.includes(',') || s.includes('"')) {
+        const s2 = s.replaceAll('"', '""');
+        return `"${s2}"`;
+      }
+      return s;
+    }
+
+    function makeCsvRow(values: (string | null)[]) {
+      return values
+        .map(makeCsvField)
+        .join(',');
+    }
+
+    return makeCsvRow([this.crn, this.name, this.status, this.confirmationStatementDue, this.accountsDue, this.address]);
+  }
+
+  public static getTsvHeader() {
+    return 'CRN\tName\tStatus\tConfirmation Statement Due\tAccounts Due\tAddress';
+  }
+
+  public getTsvRow() {
+    function makeTsvField(s: string | null) {
+      if (s === null) return '';
+      return s;
+    }
+
+    function makeTsvRow(values: (string | null)[]) {
+      return values
+        .map(makeTsvField)
+        .join('\t');
+    }
+
+    return makeTsvRow([this.crn, this.name, this.status, this.confirmationStatementDue, this.accountsDue, this.address]);
+  }
 }

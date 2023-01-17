@@ -11,6 +11,11 @@ import {
   faCircleCheck,
   faCircleNotch,
   faCircleExclamation,
+  faFileCsv,
+  faFileExcel,
+  faAngleDown,
+  faCopy,
+  faFloppyDisk,
 } from '@fortawesome/free-solid-svg-icons';
 
 fontAwesomeLibrary.add(
@@ -19,6 +24,11 @@ fontAwesomeLibrary.add(
   faCircleCheck,
   faCircleNotch,
   faCircleExclamation,
+  faFileCsv,
+  faFileExcel,
+  faAngleDown,
+  faCopy,
+  faFloppyDisk,
 );
 
 createApp(App)

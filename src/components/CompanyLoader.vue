@@ -2,7 +2,7 @@
   <section class="section">
     <div class="container">
       <div class="columns">
-        <div class="column is-half-desktop is-two-thirds-tablet is-full-mobile">
+        <div class="column">
           <div v-if="loadingState === LoadingState.Error">
             <h3 class="title is-3 is-spaced has-icon">
               <font-awesome-icon icon="fa-solid fa-circle-exclamation" />
@@ -29,6 +29,100 @@
             </p>
           </div>
         </div>
+        <div v-if="loadingState === LoadingState.Done" class="column is-narrow">
+          <div class="field is-grouped">
+            <div class="control">
+              <div class="dropdown" :class="{ 'is-active': exportDataControls.csv.dropdownOpen }">
+                <div class="dropdown-trigger">
+                  <button
+                    class="button"
+                    aria-haspopup="true"
+                    aria-controls="dropdown-menu"
+                    type="button"
+                    @click="exportDataToggleDropdown(exportDataControls.csv)"
+                  >
+                    <span class="icon">
+                      <font-awesome-icon v-if="exportDataControls.csv.success" icon="fa-solid fa-check" />
+                      <font-awesome-icon v-else icon="fa-solid fa-file-csv" />
+                    </span>
+                    <span>CSV</span>
+                    <span class="icon is-small">
+                      <font-awesome-icon icon="fa-solid fa-angle-down" />
+                    </span>
+                  </button>
+                </div>
+                <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                  <div class="dropdown-content">
+                    <a href="#" class="dropdown-item" @click.prevent="copyCsv">
+                      <span class="icon">
+                        <font-awesome-icon icon="fa-solid fa-copy" />
+                      </span>
+                      Copy
+                    </a>
+                    <a href="#" class="dropdown-item" @click.prevent="saveCsv">
+                      <span class="icon">
+                        <font-awesome-icon icon="fa-solid fa-floppy-disk" />
+                      </span>
+                      Save
+                    </a>
+                    <hr class="dropdown-divider">
+                    <div class="dropdown-item">
+                      <label class="checkbox">
+                        <input type="checkbox" v-model="exportDataControls.csv.header">
+                        Header
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="control">
+              <div class="dropdown" :class="{ 'is-active': exportDataControls.tsv.dropdownOpen }">
+                <div class="dropdown-trigger">
+                  <button
+                    class="button"
+                    aria-haspopup="true"
+                    aria-controls="dropdown-menu"
+                    type="button"
+                    @click="exportDataToggleDropdown(exportDataControls.tsv)"
+                  >
+                    <span class="icon">
+                      <font-awesome-icon v-if="exportDataControls.tsv.success" icon="fa-solid fa-check" />
+                      <font-awesome-icon v-else icon="fa-solid fa-file-excel" />
+                    </span>
+                    <span>TSV</span>
+                    <span class="icon is-small">
+                      <font-awesome-icon icon="fa-solid fa-angle-down" />
+                    </span>
+                  </button>
+                </div>
+                <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                  <div class="dropdown-content">
+                    <a href="#" class="dropdown-item" @click.prevent="copyTsv">
+                      <span class="icon">
+                        <font-awesome-icon icon="fa-solid fa-copy" />
+                      </span>
+                      Copy
+                    </a>
+                    <a href="#" class="dropdown-item" @click.prevent="saveTsv">
+                      <span class="icon">
+                        <font-awesome-icon icon="fa-solid fa-floppy-disk" />
+                      </span>
+                      Save
+                    </a>
+                    <hr class="dropdown-divider">
+                    <div class="dropdown-item">
+                      <label class="checkbox">
+                        <input type="checkbox" v-model="exportDataControls.tsv.header">
+                        Header
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -48,7 +142,9 @@ enum LoadingState {
 }
 
 interface ExportControl {
+  dropdownOpen: boolean,
   header: boolean,
+  success: boolean,
 }
 
 export default defineComponent({
@@ -87,10 +183,14 @@ export default defineComponent({
       currentEpochMilliseconds: 0,
       exportDataControls: {
         csv: <ExportControl> {
+          dropdownOpen: false,
           header: true,
+          success: false,
         },
         tsv: <ExportControl> {
+          dropdownOpen: false,
           header: true,
+          success: false,
         },
       },
     };
@@ -184,6 +284,25 @@ export default defineComponent({
         setTimeout(resolve, seconds * 1000);
       });
     },
+    exportDataToggleDropdown(control: ExportControl) {
+      const c = control;
+      c.dropdownOpen = !c.dropdownOpen;
+
+      // Close all other dropdowns
+      Object
+        .values(this.exportDataControls)
+        .forEach((otherControl) => {
+          if (otherControl !== control) {
+            // eslint-disable-next-line no-param-reassign
+            otherControl.dropdownOpen = false;
+          }
+        });
+    },
+    exportDataSuccess(control: ExportControl) {
+      const c = control;
+      c.success = true;
+      c.dropdownOpen = false;
+    },
     makeCsv() {
       const dataRows = this.loadedCompanies.map((c) => c.getCsvRow());
       return this.exportDataControls.csv.header
@@ -194,6 +313,7 @@ export default defineComponent({
       const csv = this.makeCsv();
       try {
         await navigator.clipboard.writeText(csv);
+        this.exportDataSuccess(this.exportDataControls.csv);
       } catch {
         console.error('Clipboard permission denied');
       }
@@ -201,6 +321,7 @@ export default defineComponent({
     async saveCsv() {
       const csv = this.makeCsv();
       this.saveFile(csv, 'company-data.csv', 'text/csv');
+      this.exportDataSuccess(this.exportDataControls.csv);
     },
     makeTsv() {
       const dataRows = this.loadedCompanies.map((c) => c.getTsvRow());
@@ -212,6 +333,7 @@ export default defineComponent({
       const tsv = this.makeTsv();
       try {
         await navigator.clipboard.writeText(tsv);
+        this.exportDataSuccess(this.exportDataControls.tsv);
       } catch {
         console.error('Clipboard permission denied');
       }
@@ -219,6 +341,7 @@ export default defineComponent({
     async saveTsv() {
       const tsv = this.makeTsv();
       this.saveFile(tsv, 'company-data.tsv', 'text/tab-separated-values');
+      this.exportDataSuccess(this.exportDataControls.tsv);
     },
     saveFile(data: string, filename: string, type: string) {
       const file = new Blob([data], { type });

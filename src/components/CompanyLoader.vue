@@ -130,6 +130,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
+import debounce from 'lodash.debounce';
 import Company from '@/models/Company';
 import CompaniesHouseApi from '@/models/CompaniesHouseApi';
 
@@ -145,6 +146,7 @@ interface ExportControl {
   dropdownOpen: boolean,
   header: boolean,
   success: boolean,
+  successDebounce: Function | null
 }
 
 export default defineComponent({
@@ -186,11 +188,13 @@ export default defineComponent({
           dropdownOpen: false,
           header: true,
           success: false,
+          successDebounce: null,
         },
         tsv: <ExportControl> {
           dropdownOpen: false,
           header: true,
           success: false,
+          successDebounce: null,
         },
       },
     };
@@ -302,6 +306,12 @@ export default defineComponent({
       const c = control;
       c.success = true;
       c.dropdownOpen = false;
+      if (c.successDebounce === null) {
+        c.successDebounce = debounce(() => {
+          c.success = false;
+        }, 3000);
+      }
+      c.successDebounce();
     },
     makeCsv() {
       const dataRows = this.loadedCompanies.map((c) => c.getCsvRow());

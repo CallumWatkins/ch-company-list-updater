@@ -47,6 +47,10 @@ enum LoadingState {
   Error,
 }
 
+interface ExportControl {
+  header: boolean,
+}
+
 export default defineComponent({
   name: 'CompanyInput',
   props: {
@@ -66,10 +70,10 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.timerItervalId = setInterval(() => { this.currentEpochMilliseconds = Date.now(); }, 1000);
+    this.timerItervalId = window.setInterval(() => { this.currentEpochMilliseconds = Date.now(); }, 1000);
   },
   unmounted() {
-    clearInterval(this.timerItervalId);
+    window.clearInterval(this.timerItervalId);
   },
   data() {
     return {
@@ -81,6 +85,14 @@ export default defineComponent({
       ratelimitResetEpoch: 0,
       timerItervalId: 0,
       currentEpochMilliseconds: 0,
+      exportDataControls: {
+        csv: <ExportControl> {
+          header: true,
+        },
+        tsv: <ExportControl> {
+          header: true,
+        },
+      },
     };
   },
   watch: {
@@ -171,6 +183,55 @@ export default defineComponent({
       return new Promise((resolve) => {
         setTimeout(resolve, seconds * 1000);
       });
+    },
+    makeCsv() {
+      const dataRows = this.loadedCompanies.map((c) => c.getCsvRow());
+      return this.exportDataControls.csv.header
+        ? [Company.getCsvHeader(), ...dataRows].join('\n')
+        : dataRows.join('\n');
+    },
+    async copyCsv() {
+      const csv = this.makeCsv();
+      try {
+        await navigator.clipboard.writeText(csv);
+      } catch {
+        console.error('Clipboard permission denied');
+      }
+    },
+    async saveCsv() {
+      const csv = this.makeCsv();
+      this.saveFile(csv, 'company-data.csv', 'text/csv');
+    },
+    makeTsv() {
+      const dataRows = this.loadedCompanies.map((c) => c.getTsvRow());
+      return this.exportDataControls.tsv.header
+        ? [Company.getTsvHeader(), ...dataRows].join('\n')
+        : dataRows.join('\n');
+    },
+    async copyTsv() {
+      const tsv = this.makeTsv();
+      try {
+        await navigator.clipboard.writeText(tsv);
+      } catch {
+        console.error('Clipboard permission denied');
+      }
+    },
+    async saveTsv() {
+      const tsv = this.makeTsv();
+      this.saveFile(tsv, 'company-data.tsv', 'text/tab-separated-values');
+    },
+    saveFile(data: string, filename: string, type: string) {
+      const file = new Blob([data], { type });
+      const a = document.createElement('a');
+      const url = URL.createObjectURL(file);
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 0);
     },
   },
 });

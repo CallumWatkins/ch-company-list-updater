@@ -33,8 +33,10 @@
     <footer class="footer">
       <div class="content has-text-centered">
         <p>
-          <strong>Companies House Company List Updater</strong> by <a href="https://www.callumwatkins.com" target="_blank" rel="noopener">
-            <span class="no-wrap">Callum Watkins</span></a>.
+          <strong>Company List Updater {{ version }}</strong> by <a
+            href="https://www.callumwatkins.com"
+            target="_blank"
+            rel="noopener"><span class="no-wrap">Callum Watkins</span></a>.
         </p>
       </div>
     </footer>
@@ -49,6 +51,7 @@ export default defineComponent({
   data() {
     return {
       navbarMobileOpen: false,
+      version: process.env.VUE_APP_VERSION,
     };
   },
   watch: {

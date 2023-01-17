@@ -18,6 +18,10 @@ import {
   faFloppyDisk,
 } from '@fortawesome/free-solid-svg-icons';
 
+import {
+  faGithub,
+} from '@fortawesome/free-brands-svg-icons';
+
 fontAwesomeLibrary.add(
   faKey,
   faCheck,
@@ -29,6 +33,7 @@ fontAwesomeLibrary.add(
   faAngleDown,
   faCopy,
   faFloppyDisk,
+  faGithub,
 );
 
 createApp(App)

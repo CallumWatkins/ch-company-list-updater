@@ -36,7 +36,18 @@
           <strong>Company List Updater {{ version }}</strong> by <a
             href="https://www.callumwatkins.com"
             target="_blank"
-            rel="noopener"><span class="no-wrap">Callum Watkins</span></a>.
+            rel="noopener"><span class="no-wrap">Callum Watkins</span></a>
+        </p>
+        <p class="is-size-4 mt-2">
+          <a
+            class="github-logo"
+            href="https://github.com/CallumWatkins/ch-company-list-updater"
+            rel="noopener"
+            target="_blank"
+            aria-label="View project on GitHub"
+          >
+            <font-awesome-icon icon="fa-brands fa-github" />
+          </a>
         </p>
       </div>
     </footer>
@@ -73,5 +84,9 @@ export default defineComponent({
   &__spacer {
     flex-grow: 1;
   }
+}
+
+.github-logo {
+  color: $grey-darker;
 }
 </style>

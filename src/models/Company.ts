@@ -1,3 +1,5 @@
+import CompaniesHouseApi from './CompaniesHouseApi';
+
 export default class Company {
   crn: string;
   exists: boolean;
@@ -9,8 +11,9 @@ export default class Company {
   confirmationStatementDue: string | null;
   accountsDue: string | null;
   humanUrl: string;
+  directors: string[] | null;
 
-  constructor(crn: string, exists: boolean, rawData?: any) {
+  constructor(crn: string, exists: boolean, rawData?: any, rawDirectorsData?: any) {
     this.crn = crn;
     this.exists = exists;
     this.humanUrl = `https://find-and-update.company-information.service.gov.uk/company/${crn}`;
@@ -23,6 +26,7 @@ export default class Company {
       this.address = null;
       this.confirmationStatementDue = null;
       this.accountsDue = null;
+      this.directors = null;
     } else {
       this.name = rawData.company_name;
 
@@ -93,6 +97,12 @@ export default class Company {
         && rawData.company_status !== 'dissolved'
         ? Company.formatDate(rawData.accounts.next_due)
         : null;
+
+      this.directors = rawDirectorsData?.items !== undefined
+        ? (rawDirectorsData.items as { name: string, officer_role: 'director' | 'secretary' | string, resigned_on?: unknown }[])
+          .filter((r) => r.officer_role === 'director' && r.resigned_on === undefined)
+          .map((r) => r.name)
+        : null;
     }
   }
 
@@ -103,7 +113,7 @@ export default class Company {
   }
 
   public static getCsvHeader() {
-    return 'CRN,Name,Status,Confirmation Statement Due,Accounts Due,Address';
+    return 'CRN,Name,Status,Confirmation Statement Due,Accounts Due,Director,Address';
   }
 
   public getCsvRow() {
@@ -122,11 +132,11 @@ export default class Company {
         .join(',');
     }
 
-    return makeCsvRow([this.crn, this.name, this.status, this.confirmationStatementDue, this.accountsDue, this.address]);
+    return makeCsvRow([this.crn, this.name, this.status, this.confirmationStatementDue, this.accountsDue, this.directors?.[0] ?? null, this.address]);
   }
 
   public static getTsvHeader() {
-    return 'CRN\tName\tStatus\tConfirmation Statement Due\tAccounts Due\tAddress';
+    return 'CRN\tName\tStatus\tConfirmation Statement Due\tAccounts Due\tDirector\tAddress';
   }
 
   public getTsvRow() {
@@ -141,6 +151,106 @@ export default class Company {
         .join('\t');
     }
 
-    return makeTsvRow([this.crn, this.name, this.status, this.confirmationStatementDue, this.accountsDue, this.address]);
+    return makeTsvRow([this.crn, this.name, this.status, this.confirmationStatementDue, this.accountsDue, this.directors?.[0] ?? null, this.address]);
+  }
+}
+
+async function delay(seconds: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, seconds * 1000);
+  });
+}
+
+export function waitRateLimit(ratelimitResetEpochSeconds: number): { ratelimitResetEpoch: number, promise: Promise<void> } | undefined {
+  const currentEpochSeconds = Math.round(Date.now() / 1000);
+  const ratelimitResetDifferenceSeconds: number = ratelimitResetEpochSeconds - currentEpochSeconds;
+  const rateLimitBufferSeconds = 3;
+  const ratelimitResetEpoch = ratelimitResetEpochSeconds + rateLimitBufferSeconds;
+  const delayTimeSeconds = ratelimitResetDifferenceSeconds + rateLimitBufferSeconds;
+  console.log(
+    'Rate limit exceeded!',
+    'Current time:',
+    currentEpochSeconds,
+    'Reset time:',
+    ratelimitResetEpochSeconds,
+    'Waiting for',
+    ratelimitResetDifferenceSeconds,
+    'seconds.',
+  );
+
+  if (delayTimeSeconds > 0) {
+    return { ratelimitResetEpoch, promise: delay(delayTimeSeconds) };
+  }
+
+  return undefined;
+}
+
+export async function handleResponse(response: Response): Promise<ReturnType<typeof loadCompany> | 200 | 404> {
+  switch (response.status) {
+    case 200: {
+      // Success
+      return 200;
+    }
+    case 429: {
+      // Rate limit exceeded
+      const ratelimitResetHeader = response.headers.get('x-ratelimit-reset');
+      if (ratelimitResetHeader === null) {
+        throw new Error('Missing x-ratelimit-reset header');
+      }
+      return { status: 'rate-limit', ratelimitResetEpochSeconds: parseInt(ratelimitResetHeader, 10) };
+    }
+    case 404: {
+      // Not found
+      return 404;
+    }
+    case 401: {
+      // Authorisation failed
+      return { status: 'error', error: `API authorisation failed: ${response.json()}` };
+    }
+    default: {
+      // Unexpected status code
+      return { status: 'error', error: `Unexpected status code: ${response.status}` };
+    }
+  }
+}
+
+export async function loadCompany(crn: string, api: CompaniesHouseApi): Promise<
+| { status: 'success', data: Company }
+| { status: 'rate-limit', ratelimitResetEpochSeconds: number }
+| { status: 'error', error: unknown }
+> {
+  let companyData: any;
+
+  {
+    let companyResponse: Response;
+    try {
+      companyResponse = await api.request(`/company/${crn}`);
+    } catch (e) {
+      return { status: 'error', error: e };
+    }
+
+    const handledResponse = await handleResponse(companyResponse);
+    if (handledResponse === 404) return { status: 'success', data: new Company(crn, false) };
+
+    if (handledResponse !== 200) return handledResponse;
+
+    companyData = await companyResponse.json();
+  }
+
+  {
+    let companyDirectorsRsponse: Response;
+    try {
+      companyDirectorsRsponse = await api.request(`/company/${crn}/officers?order_by=appointed_on`);
+    } catch (e) {
+      return { status: 'error', error: e };
+    }
+
+    const handledResponse = await handleResponse(companyDirectorsRsponse);
+    if (handledResponse === 404) return { status: 'error', error: `Directors not found: ${companyDirectorsRsponse.json()}` };
+
+    if (handledResponse !== 200) return handledResponse;
+
+    const companyDirectorsData = await companyDirectorsRsponse.json();
+    return { status: 'success', data: new Company(crn, true, companyData, companyDirectorsData) };
   }
 }

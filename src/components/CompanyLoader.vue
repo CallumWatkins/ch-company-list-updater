@@ -132,7 +132,7 @@
 import { defineComponent, PropType } from 'vue';
 import debounce from 'lodash.debounce';
 import Company, { loadCompany, waitRateLimit } from '@/models/Company';
-import CompaniesHouseApi from '@/models/CompaniesHouseApi';
+import { ICompaniesHouseApi } from '@/models/CompaniesHouseApi';
 
 enum LoadingState {
   Init,
@@ -153,7 +153,7 @@ export default defineComponent({
   name: 'CompanyInput',
   props: {
     api: {
-      type: Object as PropType<CompaniesHouseApi>,
+      type: Object as PropType<ICompaniesHouseApi>,
       required: true,
     },
     crns: {

@@ -1,4 +1,4 @@
-import CompaniesHouseApi from './CompaniesHouseApi';
+import { ICompaniesHouseApi } from './CompaniesHouseApi';
 
 export default class Company {
   crn: string;
@@ -214,7 +214,7 @@ export async function handleResponse(response: Response): Promise<ReturnType<typ
   }
 }
 
-export async function loadCompany(crn: string, api: CompaniesHouseApi): Promise<
+export async function loadCompany(crn: string, api: ICompaniesHouseApi): Promise<
 | { status: 'success', data: Company }
 | { status: 'rate-limit', ratelimitResetEpochSeconds: number }
 | { status: 'error', error: unknown }

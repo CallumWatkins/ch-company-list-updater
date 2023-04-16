@@ -1,4 +1,8 @@
-export default class CompaniesHouseApi {
+export interface ICompaniesHouseApi {
+  request(path: string): Promise<Response>;
+}
+
+export default class CompaniesHouseApi implements ICompaniesHouseApi {
   private readonly baseUrl = 'https://api.company-information.service.gov.uk';
   private headers: Headers;
 

@@ -131,8 +131,8 @@
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
 import debounce from 'lodash.debounce';
-import Company from '@/models/Company';
-import CompaniesHouseApi from '@/models/CompaniesHouseApi';
+import Company, { loadCompany, waitRateLimit } from '@/models/Company';
+import { ICompaniesHouseApi } from '@/models/CompaniesHouseApi';
 
 enum LoadingState {
   Init,
@@ -153,7 +153,7 @@ export default defineComponent({
   name: 'CompanyInput',
   props: {
     api: {
-      type: Object as PropType<CompaniesHouseApi>,
+      type: Object as PropType<ICompaniesHouseApi>,
       required: true,
     },
     crns: {
@@ -223,58 +223,22 @@ export default defineComponent({
           this.loadedCompanies.push(new Company(crn, false));
           this.loadedCompaniesCount++;
         } else {
-          let response: Response;
-          try {
-            response = await this.api.request(`/company/${crn}`);
-          } catch {
-            this.loadingState = LoadingState.Error;
-            return;
-          }
-          if (response.status === 200) {
-            // Company found
-            const companyData = await response.json();
-            this.loadedCompanies.push(new Company(crn, true, companyData));
+          const companyLoadResult = await loadCompany(crn, this.api);
+          if (companyLoadResult.status === 'success') {
+            this.loadedCompanies.push(companyLoadResult.data);
             this.loadedCompaniesCount++;
-          } else if (response.status === 429) {
+          } else if (companyLoadResult.status === 'rate-limit') {
             // Rate limit exceeded
             this.loadingState = LoadingState.RateLimited;
-            const ratelimitResetHeader = response.headers.get('x-ratelimit-reset');
-            if (ratelimitResetHeader === null) {
-              console.error('Missing x-ratelimit-reset header');
-              return;
-            }
-            const currentEpochSeconds = Math.round(Date.now() / 1000);
-            const ratelimitResetEpochSeconds: number = parseInt(ratelimitResetHeader, 10);
-            const ratelimitResetDifferenceSeconds: number = ratelimitResetEpochSeconds - currentEpochSeconds;
-            const rateLimitBufferSeconds = 3;
-            this.ratelimitResetEpoch = ratelimitResetEpochSeconds + rateLimitBufferSeconds;
-            const delayTimeSeconds = ratelimitResetDifferenceSeconds + rateLimitBufferSeconds;
-            console.log(
-              'Rate limit exceeded!',
-              'Current time:',
-              currentEpochSeconds,
-              'Reset time:',
-              ratelimitResetEpochSeconds,
-              'Waiting for',
-              ratelimitResetDifferenceSeconds,
-              'seconds.',
-            );
-            if (delayTimeSeconds > 0) {
-              await this.delay(delayTimeSeconds);
+            const rateLimit = waitRateLimit(companyLoadResult.ratelimitResetEpochSeconds);
+            if (rateLimit) {
+              this.ratelimitResetEpoch = rateLimit.ratelimitResetEpoch;
+              await rateLimit.promise;
             }
             this.loadingState = LoadingState.Loading;
             continue;
-          } else if (response.status === 404) {
-            // Company not found
-            this.loadedCompanies.push(new Company(crn, false));
-            this.loadedCompaniesCount++;
-          } else if (response.status === 401) {
-            // Authorisation failed
-            console.error('API authorisation failed: ', response.json());
-            return;
           } else {
-            // Unexpected status code
-            console.error('Unexpected status code: ', response.status);
+            this.loadingState = LoadingState.Error;
             return;
           }
         }
@@ -282,11 +246,6 @@ export default defineComponent({
       }
       this.loadingState = LoadingState.Done;
       this.$emit('companiesLoaded', { companies: this.loadedCompanies });
-    },
-    async delay(seconds: number): Promise<void> {
-      return new Promise((resolve) => {
-        setTimeout(resolve, seconds * 1000);
-      });
     },
     exportDataToggleDropdown(control: ExportControl) {
       const c = control;

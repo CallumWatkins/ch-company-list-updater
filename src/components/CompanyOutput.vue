@@ -37,6 +37,12 @@
                 Accounts Due</a></th>
               <th><a
                 href="#"
+                v-tippy="copiedColumnName === 'directors' ? 'Copied!' : 'Click to Copy'"
+                @click.prevent="copyColumn('directors', (directors) => directors?.[0] ?? '')"
+                @keypress.enter="copyColumn('directors', (directors) => directors?.[0] ?? '')">
+                Director</a></th>
+              <th><a
+                href="#"
                 v-tippy="copiedColumnName === 'address' ? 'Copied!' : 'Click to Copy'"
                 @click.prevent="copyColumn('address')"
                 @keypress.enter="copyColumn('address')">
@@ -50,6 +56,7 @@
               <td :title="company.cessationDate ? `Date of cessation: ${company.cessationDate}` : undefined">{{ company.status }}</td>
               <td>{{ company.confirmationStatementDue }}</td>
               <td>{{ company.accountsDue }}</td>
+              <td :title="company.directors?.join(`&#10;`)">{{ company.directors?.[0] }}</td>
               <td>{{ company.address }}</td>
             </tr>
           </tbody>
@@ -77,8 +84,8 @@ export default defineComponent({
     };
   },
   methods: {
-    async copyColumn(name: keyof Company) {
-      const data: string = this.companies.map((c) => c[name]).join('\n');
+    async copyColumn<T extends keyof Company>(name: T, convert: (c: Company[T]) => string = (c) => c?.toString() ?? '') {
+      const data: string = this.companies.map((c) => convert(c[name])).join('\n');
       try {
         await navigator.clipboard.writeText(data);
         console.log('Copied', name, 'column');

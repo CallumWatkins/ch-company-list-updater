@@ -23,7 +23,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import Company from '@/models/Company';
-import CompaniesHouseApi from '@/models/CompaniesHouseApi';
+import { ICompaniesHouseApi } from '@/models/CompaniesHouseApi';
 import ApiKeyInput from '@/components/ApiKeyInput.vue';
 import CompanyInput from '@/components/CompanyInput.vue';
 import CompanyLoader from '@/components/CompanyLoader.vue';
@@ -40,7 +40,7 @@ export default defineComponent({
   },
   data() {
     return {
-      companiesHouseApi: null as (CompaniesHouseApi | null),
+      companiesHouseApi: null as (ICompaniesHouseApi | null),
       crns: [] as string[],
       loading: false,
       loadedCompanies: [] as Company[],

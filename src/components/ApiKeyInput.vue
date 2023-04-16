@@ -47,13 +47,13 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import CompaniesHouseApi from '@/models/CompaniesHouseApi';
+import CompaniesHouseApi, { ICompaniesHouseApi } from '@/models/CompaniesHouseApi';
 
 export default defineComponent({
   name: 'ApiKeyInput',
   emits: {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    saveKey(payload: { api: CompaniesHouseApi }) {
+    saveKey(payload: { api: ICompaniesHouseApi }) {
       return true;
     },
   },
@@ -75,7 +75,7 @@ export default defineComponent({
       this.apiKeySaving = false;
       if (valid) this.$emit('saveKey', { api });
     },
-    async testApi(api: CompaniesHouseApi): Promise<boolean> {
+    async testApi(api: ICompaniesHouseApi): Promise<boolean> {
       const response: Response = await api.request('/search?q=a&items_per_page=1');
       return response.ok;
     },

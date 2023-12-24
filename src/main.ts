@@ -16,6 +16,9 @@ import {
   faAngleDown,
   faCopy,
   faFloppyDisk,
+  faSort,
+  faSortUp,
+  faSortDown,
 } from '@fortawesome/free-solid-svg-icons';
 
 import {
@@ -34,6 +37,9 @@ fontAwesomeLibrary.add(
   faCopy,
   faFloppyDisk,
   faGithub,
+  faSort,
+  faSortUp,
+  faSortDown,
 );
 
 createApp(App)

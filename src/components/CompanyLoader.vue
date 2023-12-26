@@ -160,6 +160,10 @@ export default defineComponent({
       type: Array as PropType<Array<string>>,
       required: true,
     },
+    sortedCompanies: {
+      type: Array as PropType<Array<Company>>,
+      required: true,
+    },
   },
   emits: {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -179,7 +183,6 @@ export default defineComponent({
       loadingState: LoadingState.Init,
       loadedCompaniesCount: 0,
       totalCompaniesCount: 0,
-      loadedCompanies: [] as Company[],
       ratelimitResetEpoch: 0,
       timerItervalId: 0,
       currentEpochMilliseconds: 0,
@@ -212,7 +215,7 @@ export default defineComponent({
   methods: {
     async loadCompanies() {
       this.loadingState = LoadingState.Loading;
-      this.loadedCompanies = [];
+      const loadedCompanies = [];
       this.$emit('companiesLoaded', { companies: [] });
       this.loadedCompaniesCount = 0;
       this.totalCompaniesCount = this.crns.length;
@@ -220,12 +223,12 @@ export default defineComponent({
       for (let i = 0; i < this.crns.length;) {
         const crn = this.crns[i];
         if (crn === '00000000') {
-          this.loadedCompanies.push(new Company(crn, false));
+          loadedCompanies.push(new Company(crn, false));
           this.loadedCompaniesCount++;
         } else {
           const companyLoadResult = await loadCompany(crn, this.api);
           if (companyLoadResult.status === 'success') {
-            this.loadedCompanies.push(companyLoadResult.data);
+            loadedCompanies.push(companyLoadResult.data);
             this.loadedCompaniesCount++;
           } else if (companyLoadResult.status === 'rate-limit') {
             // Rate limit exceeded
@@ -245,7 +248,7 @@ export default defineComponent({
         i++;
       }
       this.loadingState = LoadingState.Done;
-      this.$emit('companiesLoaded', { companies: this.loadedCompanies });
+      this.$emit('companiesLoaded', { companies: loadedCompanies });
     },
     exportDataToggleDropdown(control: ExportControl) {
       const c = control;
@@ -273,7 +276,7 @@ export default defineComponent({
       c.successDebounce();
     },
     makeCsv() {
-      const dataRows = this.loadedCompanies.map((c) => c.getCsvRow());
+      const dataRows = this.sortedCompanies.map((c) => c.getCsvRow());
       return this.exportDataControls.csv.header
         ? [Company.getCsvHeader(), ...dataRows].join('\n')
         : dataRows.join('\n');
@@ -293,7 +296,7 @@ export default defineComponent({
       this.exportDataSuccess(this.exportDataControls.csv);
     },
     makeTsv() {
-      const dataRows = this.loadedCompanies.map((c) => c.getTsvRow());
+      const dataRows = this.sortedCompanies.map((c) => c.getTsvRow());
       return this.exportDataControls.tsv.header
         ? [Company.getTsvHeader(), ...dataRows].join('\n')
         : dataRows.join('\n');

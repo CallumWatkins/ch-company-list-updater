@@ -14,6 +14,7 @@
     v-if="companiesHouseApi !== null && crns.length > 0"
     :api="companiesHouseApi"
     :crns="crns"
+    :sorted-companies="sortedCompanies"
     @companies-loaded="companiesLoaded" />
   <CompanyOutput
     v-if="companies.length > 0"
@@ -54,7 +55,7 @@ export default defineComponent({
       const sorting = this.sorting;
       if (sorting === null) return this.companies;
 
-      const sortedCompanies = structuredClone(this.companies);
+      const sortedCompanies = [...this.companies];
       sortedCompanies.sort((a: Company, b: Company) => {
         const orderBy = sorting.order === 'asc' ? 1 : -1;
         const valA = a[sorting.column];

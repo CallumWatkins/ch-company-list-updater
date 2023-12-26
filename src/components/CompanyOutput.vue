@@ -117,7 +117,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
-import Company from '@/models/Company';
+import Company, { CompanySorting } from '@/models/Company';
 
 export default defineComponent({
   name: 'CompanyOutput',
@@ -129,12 +129,14 @@ export default defineComponent({
   },
   computed: {
     sortedCompanies(): Company[] {
-      if (!this.sortBy) return this.companies;
+      const sorting = this.sorting;
+      if (sorting === null) return this.companies;
+
       const sortedCompanies = structuredClone(this.companies);
       sortedCompanies.sort((a: Company, b: Company) => {
-        const orderBy = this.sortAscending ? 1 : -1;
-        const valA = a[this.sortBy!];
-        const valB = b[this.sortBy!];
+        const orderBy = sorting.order === 'asc' ? 1 : -1;
+        const valA = a[sorting.column];
+        const valB = b[sorting.column];
         if (!valA) return orderBy * -1;
         if (!valB) return orderBy * 1;
 
@@ -150,7 +152,7 @@ export default defineComponent({
           return sortableA.localeCompare(sortableB) * orderBy;
         };
 
-        switch (this.sortBy) {
+        switch (sorting.column) {
           case 'confirmationStatementDue':
           case 'accountsDue':
             return sortDate(valA as string, valB as string);
@@ -168,8 +170,7 @@ export default defineComponent({
   data() {
     return {
       copiedColumnName: '',
-      sortBy: null as keyof Company | null,
-      sortAscending: true,
+      sorting: null as CompanySorting | null,
     };
   },
   methods: {
@@ -184,20 +185,22 @@ export default defineComponent({
       }
     },
     sort(column: keyof Company): void {
-      if (this.sortBy === column) {
-        if (!this.sortAscending) {
-          this.sortBy = null;
+      if (this.sorting === null) {
+        this.sorting = { column, order: 'asc' };
+      } else if (this.sorting.column === column) {
+        if (this.sorting.order === 'asc') {
+          this.sorting.order = 'desc';
         } else {
-          this.sortAscending = !this.sortAscending;
+          this.sorting = null;
         }
       } else {
-        this.sortBy = column;
-        this.sortAscending = true;
+        this.sorting.column = column;
+        this.sorting.order = 'asc';
       }
     },
     getSortIcon(column: keyof Company): string {
-      if (this.sortBy === column) {
-        return this.sortAscending ? 'fa-sort-up' : 'fa-sort-down';
+      if (this.sorting?.column === column) {
+        return this.sorting.order === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
       }
       return 'fa-sort';
     },

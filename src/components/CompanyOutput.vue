@@ -122,60 +122,30 @@ import Company, { CompanySorting } from '@/models/Company';
 export default defineComponent({
   name: 'CompanyOutput',
   props: {
-    companies: {
+    sortedCompanies: {
       type: Array as PropType<Array<Company>>,
       required: true,
     },
-  },
-  computed: {
-    sortedCompanies(): Company[] {
-      const sorting = this.sorting;
-      if (sorting === null) return this.companies;
-
-      const sortedCompanies = structuredClone(this.companies);
-      sortedCompanies.sort((a: Company, b: Company) => {
-        const orderBy = sorting.order === 'asc' ? 1 : -1;
-        const valA = a[sorting.column];
-        const valB = b[sorting.column];
-        if (!valA) return orderBy * -1;
-        if (!valB) return orderBy * 1;
-
-        const sortDate = (dateA: string, dateB: string) => {
-          const sortableA = dateA.split('/').reverse().join('');
-          const sortableB = dateB.split('/').reverse().join('');
-          return sortableA.localeCompare(sortableB) * orderBy;
-        };
-
-        const sortStringArray = (arrayA: string[], arrayB: string[]) => {
-          const sortableA = arrayA.join('');
-          const sortableB = arrayB.join('');
-          return sortableA.localeCompare(sortableB) * orderBy;
-        };
-
-        switch (sorting.column) {
-          case 'confirmationStatementDue':
-          case 'accountsDue':
-            return sortDate(valA as string, valB as string);
-          case 'directors':
-            return sortStringArray(valA as string[], valB as string[]);
-          default:
-            if (valA > valB) return orderBy * 1;
-            if (valA < valB) return orderBy * -1;
-            return 1;
-        }
-      });
-      return sortedCompanies;
+    sorting: {
+      type: Object as PropType<CompanySorting | null>,
+      required: false,
+      default: null,
     },
   },
   data() {
     return {
       copiedColumnName: '',
-      sorting: null as CompanySorting | null,
     };
+  },
+  emits: {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    sort(_payload: CompanySorting | null) {
+      return true;
+    },
   },
   methods: {
     async copyColumn<T extends keyof Company>(name: T, convert: (c: Company[T]) => string = (c) => c?.toString() ?? '') {
-      const data: string = this.companies.map((c) => convert(c[name])).join('\n');
+      const data: string = this.sortedCompanies.map((c) => convert(c[name])).join('\n');
       try {
         await navigator.clipboard.writeText(data);
         console.log('Copied', name, 'column');
@@ -185,17 +155,14 @@ export default defineComponent({
       }
     },
     sort(column: keyof Company): void {
-      if (this.sorting === null) {
-        this.sorting = { column, order: 'asc' };
-      } else if (this.sorting.column === column) {
+      if (this.sorting?.column === column) {
         if (this.sorting.order === 'asc') {
-          this.sorting.order = 'desc';
+          this.$emit('sort', { column, order: 'desc' });
         } else {
-          this.sorting = null;
+          this.$emit('sort', null);
         }
       } else {
-        this.sorting.column = column;
-        this.sorting.order = 'asc';
+        this.$emit('sort', { column, order: 'asc' });
       }
     },
     getSortIcon(column: keyof Company): string {

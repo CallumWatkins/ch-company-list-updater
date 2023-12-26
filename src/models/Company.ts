@@ -258,3 +258,5 @@ export async function loadCompany(crn: string, api: ICompaniesHouseApi): Promise
     return { status: 'success', data: new Company(crn, true, companyData, companyDirectorsData) };
   }
 }
+
+export type CompanySorting = { column: keyof Company, order: 'asc' | 'desc' };

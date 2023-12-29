@@ -99,7 +99,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="company in sortedCompanies" :key="company.crn">
+            <tr v-for="company in sortedCompanies" :key="company.id">
               <td><a :href="company.humanUrl" target="_blank" rel="noopener noreferrer">{{ company.crn }}</a></td>
               <td :title="company.creationDate ? `Date of incorporation: ${company.creationDate}` : undefined">{{ company.name }}</td>
               <td :title="company.cessationDate ? `Date of cessation: ${company.cessationDate}` : undefined">{{ company.status }}</td>

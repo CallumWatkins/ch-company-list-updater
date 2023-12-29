@@ -223,10 +223,10 @@ export default defineComponent({
       for (let i = 0; i < this.crns.length;) {
         const crn = this.crns[i];
         if (crn === '00000000') {
-          loadedCompanies.push(new Company(crn, false));
+          loadedCompanies.push(new Company(i, crn, false));
           this.loadedCompaniesCount++;
         } else {
-          const companyLoadResult = await loadCompany(crn, this.api);
+          const companyLoadResult = await loadCompany(i, crn, this.api);
           if (companyLoadResult.status === 'success') {
             loadedCompanies.push(companyLoadResult.data);
             this.loadedCompaniesCount++;

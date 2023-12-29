@@ -1,6 +1,7 @@
 import { ICompaniesHouseApi } from './CompaniesHouseApi';
 
 export default class Company {
+  id: number;
   crn: string;
   exists: boolean;
   name: string;
@@ -13,7 +14,8 @@ export default class Company {
   humanUrl: string;
   directors: string[] | null;
 
-  constructor(crn: string, exists: boolean, rawData?: any, rawDirectorsData?: any) {
+  constructor(id: number, crn: string, exists: boolean, rawData?: any, rawDirectorsData?: any) {
+    this.id = id;
     this.crn = crn;
     this.exists = exists;
     this.humanUrl = `https://find-and-update.company-information.service.gov.uk/company/${crn}`;
@@ -214,7 +216,7 @@ export async function handleResponse(response: Response): Promise<ReturnType<typ
   }
 }
 
-export async function loadCompany(crn: string, api: ICompaniesHouseApi): Promise<
+export async function loadCompany(id: number, crn: string, api: ICompaniesHouseApi): Promise<
 | { status: 'success', data: Company }
 | { status: 'rate-limit', ratelimitResetEpochSeconds: number }
 | { status: 'error', error: unknown }
@@ -232,7 +234,7 @@ export async function loadCompany(crn: string, api: ICompaniesHouseApi): Promise
     }
 
     const handledResponse = await handleResponse(companyResponse);
-    if (handledResponse === 404) return { status: 'success', data: new Company(crn, false) };
+    if (handledResponse === 404) return { status: 'success', data: new Company(id, crn, false) };
 
     if (handledResponse !== 200) return handledResponse;
 
@@ -255,7 +257,7 @@ export async function loadCompany(crn: string, api: ICompaniesHouseApi): Promise
     if (handledResponse !== 200) return handledResponse;
 
     const companyDirectorsData = await companyDirectorsRsponse.json();
-    return { status: 'success', data: new Company(crn, true, companyData, companyDirectorsData) };
+    return { status: 'success', data: new Company(id, crn, true, companyData, companyDirectorsData) };
   }
 }
 

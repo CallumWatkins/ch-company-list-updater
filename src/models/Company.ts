@@ -241,27 +241,24 @@ export async function loadCompany(id: number, crn: string, api: ICompaniesHouseA
     companyData = await companyResponse.json();
   }
 
-  // FIXME: Until officers CORS 401 issue is resolved, return no company director data (see #38)
-  return { status: 'success', data: new Company(id, crn, true, companyData, null) };
+  {
+    let companyDirectorsRsponse: Response;
+    try {
+      companyDirectorsRsponse = await api.request(`/company/${crn}/officers?order_by=appointed_on`);
+    } catch (e) {
+      // FIXME: Until 429 includes CORS headers, assume that any error is a 5m rate limit (see #3)
+      return { status: 'rate-limit', ratelimitResetEpochSeconds: Math.floor(Date.now() / 1000) + (5 * 60) };
+      // return { status: 'error', error: e };
+    }
 
-  // {
-  //   let companyDirectorsRsponse: Response;
-  //   try {
-  //     companyDirectorsRsponse = await api.request(`/company/${crn}/officers?order_by=appointed_on`);
-  //   } catch (e) {
-  //     // FIXME: Until 429 includes CORS headers, assume that any error is a 5m rate limit (see #3)
-  //     return { status: 'rate-limit', ratelimitResetEpochSeconds: Math.floor(Date.now() / 1000) + (5 * 60) };
-  //     // return { status: 'error', error: e };
-  //   }
+    const handledResponse = await handleResponse(companyDirectorsRsponse);
+    if (handledResponse === 404) return { status: 'error', error: `Directors not found: ${companyDirectorsRsponse.json()}` };
 
-  //   const handledResponse = await handleResponse(companyDirectorsRsponse);
-  //   if (handledResponse === 404) return { status: 'error', error: `Directors not found: ${companyDirectorsRsponse.json()}` };
+    if (handledResponse !== 200) return handledResponse;
 
-  //   if (handledResponse !== 200) return handledResponse;
-
-  //   const companyDirectorsData = await companyDirectorsRsponse.json();
-  //   return { status: 'success', data: new Company(id, crn, true, companyData, companyDirectorsData) };
-  // }
+    const companyDirectorsData = await companyDirectorsRsponse.json();
+    return { status: 'success', data: new Company(id, crn, true, companyData, companyDirectorsData) };
+  }
 }
 
 export type CompanySorting = { column: keyof Company, order: 'asc' | 'desc' };

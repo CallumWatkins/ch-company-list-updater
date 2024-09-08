@@ -219,6 +219,7 @@ export default defineComponent({
       this.$emit('companiesLoaded', { companies: [] });
       this.loadedCompaniesCount = 0;
       this.totalCompaniesCount = this.crns.length;
+      const cache = new Map<string, Company>();
 
       for (let i = 0; i < this.crns.length;) {
         const crn = this.crns[i];
@@ -226,7 +227,17 @@ export default defineComponent({
           loadedCompanies.push(new Company(i, crn, false));
           this.loadedCompaniesCount++;
         } else {
-          const companyLoadResult = await loadCompany(i, crn, this.api);
+          let companyLoadResult: Awaited<ReturnType<typeof loadCompany>>;
+          if (cache.has(crn)) {
+            const data = structuredClone(cache.get(crn)!);
+            data.id = i;
+            companyLoadResult = { status: 'success', data };
+          } else {
+            companyLoadResult = await loadCompany(i, crn, this.api);
+            if (companyLoadResult.status === 'success') {
+              cache.set(crn, companyLoadResult.data);
+            }
+          }
           if (companyLoadResult.status === 'success') {
             loadedCompanies.push(companyLoadResult.data);
             this.loadedCompaniesCount++;

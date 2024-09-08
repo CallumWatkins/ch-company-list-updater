@@ -22,7 +22,7 @@
                   Each line should contain a single CRN
                 </p>
               </div>
-              <div class="field">
+              <div class="field is-grouped">
                 <div class="control">
                   <button
                     type="submit"
@@ -30,6 +30,11 @@
                     :class="{ 'is-loading': isLoading }">
                     Load
                   </button>
+                </div>
+                <div v-if="duplicateCrnCount > 0" class="control is-expanded has-text-right">
+                  <a @click="removeDuplicateCrns" href="#">
+                    Remove {{ duplicateCrnCount }} duplicate{{ duplicateCrnCount === 1 ? '' : 's' }}
+                  </a>
                 </div>
               </div>
             </fieldset>
@@ -72,11 +77,30 @@ export default defineComponent({
         this.crns = newVal.split(/\r?\n/);
       },
     },
+    duplicateCrnCount() {
+      const crns = this.crns
+        .map((c) => c.trim())
+        .filter((c) => c !== '' && c !== '00000000');
+      const uniqueCrns = new Set(crns);
+      return crns.length - uniqueCrns.size;
+    },
   },
   methods: {
     crnValid(crn: string): boolean {
       const regexp = /^(?:[A-Z]{2}[0-9]{6}|[0-9]{8})$/;
       return regexp.test(crn);
+    },
+    removeDuplicateCrns() {
+      const seen = new Set();
+      const newCrns: string[] = [];
+      this.crns.forEach((crn) => {
+        const val = crn.trim();
+        const isEmpty = val === '' || val === '00000000';
+        if (!isEmpty && seen.has(val)) return;
+        seen.add(val);
+        newCrns.push(val);
+      });
+      this.crns = newCrns;
     },
     async submitCrns() {
       this.crnsInvalid = false;

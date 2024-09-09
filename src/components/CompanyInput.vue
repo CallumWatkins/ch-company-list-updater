@@ -32,7 +32,7 @@
                   </button>
                 </div>
                 <div v-if="duplicateCrnCount > 0" class="control is-expanded has-text-right">
-                  <a @click="removeDuplicateCrns" href="#">
+                  <a @click.prevent="removeDuplicateCrns" href="#">
                     Remove {{ duplicateCrnCount }} duplicate{{ duplicateCrnCount === 1 ? '' : 's' }}
                   </a>
                 </div>

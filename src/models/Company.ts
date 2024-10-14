@@ -197,7 +197,10 @@ export async function handleResponse(response: Response): Promise<ReturnType<typ
       // Rate limit exceeded
       const ratelimitResetHeader = response.headers.get('x-ratelimit-reset');
       if (ratelimitResetHeader === null) {
-        throw new Error('Missing x-ratelimit-reset header');
+        // This can happen if the server doesn't include the header in the response, or if the CORS
+        // Access-Control-Expose-Headers header is missing or does not include x-ratelimit-reset.
+        // Assume that the rate limit is 5 minutes.
+        return { status: 'rate-limit', ratelimitResetEpochSeconds: Math.floor(Date.now() / 1000) + (5 * 60) };
       }
       return { status: 'rate-limit', ratelimitResetEpochSeconds: parseInt(ratelimitResetHeader, 10) };
     }

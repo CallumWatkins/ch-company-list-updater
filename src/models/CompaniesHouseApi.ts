@@ -15,8 +15,6 @@ export default class CompaniesHouseApi implements ICompaniesHouseApi {
     const url = `${this.baseUrl}${path}`;
     const headers = this.headers;
     try {
-      // TODO: Fails here on 429
-      // https://forum.aws.chdev.org/t/cors-headers-missing-from-429-response/5209
       return await fetch(url, { method: 'GET', headers });
     } catch (e) {
       console.error('API request failed', e);

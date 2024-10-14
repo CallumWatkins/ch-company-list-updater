@@ -231,9 +231,7 @@ export async function loadCompany(id: number, crn: string, api: ICompaniesHouseA
     try {
       companyResponse = await api.request(`/company/${crn}`);
     } catch (e) {
-      // FIXME: Until 429 includes CORS headers, assume that any error is a 5m rate limit (see #3)
-      return { status: 'rate-limit', ratelimitResetEpochSeconds: Math.floor(Date.now() / 1000) + (5 * 60) };
-      // return { status: 'error', error: e };
+      return { status: 'error', error: e };
     }
 
     const handledResponse = await handleResponse(companyResponse);
@@ -249,9 +247,7 @@ export async function loadCompany(id: number, crn: string, api: ICompaniesHouseA
     try {
       companyDirectorsRsponse = await api.request(`/company/${crn}/officers?order_by=appointed_on`);
     } catch (e) {
-      // FIXME: Until 429 includes CORS headers, assume that any error is a 5m rate limit (see #3)
-      return { status: 'rate-limit', ratelimitResetEpochSeconds: Math.floor(Date.now() / 1000) + (5 * 60) };
-      // return { status: 'error', error: e };
+      return { status: 'error', error: e };
     }
 
     const handledResponse = await handleResponse(companyDirectorsRsponse);
